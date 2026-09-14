@@ -5,21 +5,34 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "oasx",
+            "name": "oasx (Windows)",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "windows"
         },
         {
             "name": "oasx (profile mode)",
             "request": "launch",
             "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "windows",
             "flutterMode": "profile"
         },
         {
             "name": "oasx (release mode)",
             "request": "launch",
             "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "windows",
             "flutterMode": "release"
+        },
+        {
+            "name": "oasx (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "chrome"
         }
     ]
 }
