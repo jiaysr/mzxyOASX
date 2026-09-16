@@ -14,7 +14,8 @@ permissions:
 jobs:
   release-windows:
     name: Build & Release [Windows]
-    runs-on: windows-latest
+    # 需要 VS 2022（v17）：windows-latest 已升到 VS 2026(v18)，Flutter 3.27.1 认不出
+    runs-on: windows-2022
     env:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: "utf-8"
@@ -61,18 +62,6 @@ jobs:
 
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
-
-      - name: Diagnose toolchain
-        shell: pwsh
-        run: |
-          flutter doctor -v
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          Write-Host "--- vswhere versions ---"
-          & $vswhere -all -products * -format value -property installationVersion
-          Write-Host "--- vswhere names ---"
-          & $vswhere -all -products * -format value -property displayName
-          Write-Host "--- latest with VC.Tools ---"
-          & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 
       - name: Flutter pub get
         run: flutter pub get
