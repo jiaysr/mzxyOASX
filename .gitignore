@@ -46,3 +46,6 @@ app.*.map.json
 
 /normal/*
 .claude/settings.local.json
+
+# 本地构建产物
+oasx_*_windows.zip
