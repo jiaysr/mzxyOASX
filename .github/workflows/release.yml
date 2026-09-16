@@ -62,6 +62,18 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
+      - name: Diagnose toolchain
+        shell: pwsh
+        run: |
+          flutter doctor -v
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          Write-Host "--- vswhere versions ---"
+          & $vswhere -all -products * -format value -property installationVersion
+          Write-Host "--- vswhere names ---"
+          & $vswhere -all -products * -format value -property displayName
+          Write-Host "--- latest with VC.Tools ---"
+          & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+
       - name: Flutter pub get
         run: flutter pub get
 
