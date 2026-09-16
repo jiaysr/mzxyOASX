@@ -1,0 +1,83 @@
+name: Release
+
+# 推 v* tag 自动构建 Windows 包并发布 Release
+# 也可以在 Actions 页面手动触发（版本号从 pubspec.yaml 读取）
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-windows:
+    name: Build & Release [Windows]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Resolve version from pubspec
+        id: ver
+        shell: pwsh
+        run: |
+          $m = Select-String -Path pubspec.yaml -Pattern '^version:\s*([0-9]+\.[0-9]+\.[0-9]+)' | Select-Object -First 1
+          if (-not $m) { throw "无法从 pubspec.yaml 解析版本号" }
+          $ver = $m.Matches[0].Groups[1].Value
+          "version=$ver" >> $env:GITHUB_OUTPUT
+          "tag=v$ver" >> $env:GITHUB_OUTPUT
+          Write-Host "pubspec version = $ver"
+
+      - name: Verify tag matches pubspec
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $expect = "${{ steps.ver.outputs.tag }}"
+          if ($tag -ne $expect) {
+            throw "tag $tag 与 pubspec 版本 $expect 不一致，请先同步版本号"
+          }
+          Write-Host "tag $tag OK"
+
+      - name: Extract changelog
+        run: python script/extract_changelog.py
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.27.1"
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Windows release
+        run: flutter build windows --release
+
+      - name: Package zip
+        shell: pwsh
+        run: |
+          $zip = "oasx_${{ steps.ver.outputs.version }}_windows.zip"
+          Compress-Archive -Path "build/windows/x64/runner/Release/*" -DestinationPath $zip -Force
+          Get-Item $zip | Select-Object Name, Length | Format-List
+
+      - name: Create or update Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.tag }}
+          body_path: CHANGELATEST.md
+          files: oasx_${{ steps.ver.outputs.version }}_windows.zip
+          draft: false
+          prerelease: false

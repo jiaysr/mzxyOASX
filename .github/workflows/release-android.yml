@@ -1,7 +1,8 @@
+# 上游 OASX 的发布流水线，依赖 upstream 仓库的 secrets（RELEASE_TOKEN、
+# OASX_RELEASE、WINDOWS_PATH_KEY 等），本 fork 未配置，改为仅手动触发。
+# 本仓库的自动发布见 release.yml。
 on:
-  push:
-    tags:
-      - v*
+  workflow_dispatch:
 name: Build-Release[Android]
 
 jobs:
