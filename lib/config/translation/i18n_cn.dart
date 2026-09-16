@@ -105,10 +105,12 @@ final Map<String, String> _cn_menu = {
   I18n.global_game: '全局配置',
   I18n.soul_zones: '御魂副本',
   I18n.orochi: '八岐大蛇',
+  I18n.world_boss: '世界首领',
   I18n.sougenbi: '业原火',
   I18n.fallen_sun: '日轮之陨',
   I18n.eternity_sea: '永生之海',
   I18n.daily_task: '日常任务',
+  I18n.battle_task: '战斗任务',
   I18n.daily_trifles: '每日琐事',
   I18n.area_boss: '地域鬼王',
   I18n.gold_youkai: '金币妖怪',
@@ -179,7 +181,9 @@ final Map<String, String> _cn_script = {
 某些模拟器多开时具有相同的句柄标题（说的就是MuMu），此时需要手动获取模拟器的句柄号手动设置。
 获取工具请查阅文档：[模拟器支持]''',
   I18n.package_name: '游戏客户端',
-  I18n.package_name_help: '模拟器上装有多个游戏客户端时，需要手动选择服务器',
+  I18n.package_name_help: '选择你安装的明珠轩辕客户端版本，小七版或官方版',
+  'pip.com.xuanyuan.x7sy': '小七版',
+  'com.pip.android.xuanyuan': '官方版',
   I18n.screenshot_method: '模拟器截屏方案',
   I18n.screenshot_method_help: '''使用自动选择时，将执行一次性能测试并自动更改为最快的截图方案。一般情况下的速度: 
 window_background ~= nemu_ipc >>> DroidCast_raw >  ADB_nc >> DroidCast > uiautomator2 ~= ADB
@@ -215,7 +219,7 @@ nemu_ipc仅限mumu12模拟器且要求版本大于3.8.13，并且需要设置模
   I18n.task_hoarding_duration: '囤积任务 X 分钟',
   I18n.task_hoarding_duration_help: '能在收菜期间降低操作游戏的频率,任务触发后，等待 X 分钟，再一次性执行囤积的任务',
   I18n.when_task_queue_empty: '当任务队列清空后',
-  I18n.when_task_queue_empty_help: '无任务时关闭游戏，能在收菜期间降低 CPU 占用',
+  I18n.when_task_queue_empty_help: '无任务时挂机（不做任何操作）或关闭游戏，关闭游戏能在收菜期间降低 CPU 占用',
   I18n.schedule_rule: '选择任务调度规则',
   I18n.schedule_rule_help: '''这里所指的调度的对象是指Pending中的，Waiting中的任务不属于。
 基于过滤器(Filter)的调度：默认的选项，任务的执行顺序会根据开发时所确定的顺序来调度，一般是最优解

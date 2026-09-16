@@ -18,6 +18,8 @@ final Map<String, String> _us_ui = {
   I18n.en_us: 'English',
   I18n.project_statement: 'Open Source Software',
   I18n.task_setting: 'Settings',
+  I18n.world_boss: 'World Boss',
+  I18n.battle_task: 'Battle Task',
   I18n.notify_test_help:
       'Please refer to the documentation [Message Push] to fill in the relevant configuration',
   I18n.root_path_server_help:
@@ -56,7 +58,9 @@ Handle Number:
 Some emulators have the same handle title when multiple instances are opened (referring to MuMu). In this case, you need to manually obtain the emulator's handle number and set it manually. 
 Please refer to the documentation for tools to obtain it: [Emulator Support]''',
   I18n.package_name_help:
-      'When multiple game clients are installed on the emulator, you need to manually select the server',
+      'Select the MingZhuXuanYuan client you installed, X7 or Official',
+  'pip.com.xuanyuan.x7sy': 'X7',
+  'com.pip.android.xuanyuan': 'Official',
   I18n.screenshot_method_help:
       '''When automatic selection is used, a performance test will be performed once, and it will automatically change to the fastest screenshot solution. The general speed is: 
 window_background ~= nemu_ipc >>> DroidCast_raw > ADB_nc >> DroidCast > uiautomator2 ~= ADB 
@@ -78,7 +82,7 @@ The control method simulates human speed, and faster is not always better. Using
   I18n.task_hoarding_duration_help:
       'Can reduce the frequency of game operations during farming periods. After a task is triggered, wait X minutes, then execute the accumulated tasks all at once',
   I18n.when_task_queue_empty_help:
-      'Close the game when there are no tasks, which can reduce CPU usage during farming periods',
+      'Idle (no operation) or close the game when there are no tasks; closing the game reduces CPU usage during idle periods',
   I18n.schedule_rule_help:
       '''The scheduling objects referred to here are those in Pending; tasks in Waiting are not included. 
 Filter-based scheduling: The default option. The execution order of tasks will be scheduled according to the order determined during development, which is generally the optimal solution. 

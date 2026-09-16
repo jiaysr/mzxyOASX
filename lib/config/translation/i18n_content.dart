@@ -100,10 +100,12 @@ class I18n {
   static const String global_game = 'GlobalGame';
   static const String soul_zones = 'Soul Zones';
   static const String orochi = 'Orochi';
+  static const String world_boss = 'WorldBoss';
   static const String sougenbi = 'Sougenbi';
   static const String fallen_sun = 'FallenSun';
   static const String eternity_sea = 'EternitySea';
   static const String daily_task = 'Daily Task';
+  static const String battle_task = 'Battle Task';
   static const String daily_trifles = 'DailyTrifles';
   static const String area_boss = 'AreaBoss';
   static const String gold_youkai = 'GoldYoukai';
