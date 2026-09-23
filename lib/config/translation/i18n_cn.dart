@@ -1038,8 +1038,8 @@ final Map<String, String> _cn_float_parade_config = {
 };
 
 final Map<String, String> _cn_quiz_config = {
-  'Quiz': '智力竞赛',
-  'quiz_config': '答题配置',
+  'Quiz': '每日答题',
+  'quiz_config': '答题设置',
   'quiz_cnt': '答题多少轮',
   'quiz_cnt_help': '',
   'quiz_per_round': '每轮计划答多少道题',
@@ -1221,3 +1221,48 @@ final Map<String, String> _cn_demon_retreat_config = {
 };
 
 final Map<String, String> _cn_dye_trials_config = {};
+
+// 明珠轩辕（mzxy）任务词条：任务名 / 配置分组 / 字段名
+final Map<String, String> _cn_mzxy_tasks = {
+  'WarChariot': '参与战车',
+  'Arena': '同服竞技',
+  'CrossArena': '跨服竞技',
+  'AncientHunt': '上古狩猎',
+  'war_chariot': '参与战车',
+  'arena': '同服竞技',
+  'cross_arena': '跨服竞技',
+  'ancient_hunt': '上古狩猎',
+  'script': '脚本设置',
+  'restart': '重启设置',
+  'war_chariot_config': '战车设置',
+  'arena_config': '同服竞技设置',
+  'cross_arena_config': '跨服竞技设置',
+  'ancient_hunt_config': '上古狩猎设置',
+  'error_repeated': '多次出错关闭模拟器',
+  'use_activity': '根据活跃度判断',
+  'count': '每日完成次数',
+  'match_timeout': '匹配超时时间',
+  'completed': '今日已完成次数',
+  'start_time': '开放时间',
+  'keyword': '检测关键字',
+  'check_interval': '检测间隔',
+  'check_timeout': '检测超时',
+  'offline_time': '离线时长',
+  'target_location': '目标地点',
+  'active_task_name': '活跃任务名',
+  'open_times': '开放时间段',
+  'lock_timeout': '锁定超时',
+  'enter_wait': '进入后等待',
+  'api_key': 'API Key',
+  'model': '模型',
+  'api_timeout': 'API 超时',
+  'use_thinking': '思考模式',
+  'total_questions': '题目数量',
+  'question_time_limit': '每题限时',
+  'ask_again_if_unverified': '未验证题重新问 AI',
+  'unknown_fallback': '兜底策略',
+  'save_unknown_screenshot': '保存答题截图',
+  'learn_from_llm': 'AI 答案写入题库',
+  'bank_repo_dir': '题库交换目录',
+  'bank_repo_url': '题库交换地址',
+};
