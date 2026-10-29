@@ -89,7 +89,8 @@ class NavCtrl extends GetxController {
     selectedMenu.value = menu;
 
     // args的切换
-    if (['Home', 'Overview', 'Updater', 'Tool'].contains(menu)) {
+    // Battle 是独立页面（技能图标墙 + 拖拽排序），不加载通用 args 表单
+    if (['Home', 'Overview', 'Updater', 'Tool', 'Battle'].contains(menu)) {
       return;
     }
     if (selectedScript.value == 'Home') {

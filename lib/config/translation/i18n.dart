@@ -7,6 +7,7 @@ import 'package:oasx/utils/extension_utils.dart';
 import 'i18n_content.dart';
 part 'i18n_us.dart';
 part 'i18n_cn.dart';
+part 'i18n_battle.dart';
 
 class Messages extends Translations {
   @override
@@ -19,7 +20,8 @@ class Messages extends Translations {
 
   late final Map<String, String> all_us_translate = {
     ..._us_base_map,
-    ...convertCnToUsMap()
+    ...convertCnToUsMap(),
+    ..._us_battle,
   };
 
   /// Extract the keys from the Chinese map, remove underscores, and capitalize the first letter of each word to use as the English translation
@@ -92,6 +94,7 @@ class Messages extends Translations {
     ..._cn_demon_retreat_config,
     ..._cn_dye_trials_config,
     ..._cn_mzxy_tasks,
+    ..._cn_battle,
   };
 
   bool translateUpdate(String key, String value, {String locale = 'zh-CN'}) {

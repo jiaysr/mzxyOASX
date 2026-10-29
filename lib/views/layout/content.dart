@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_getx_widget.dart';
 
 import 'package:oasx/views/args/args_view.dart';
+import 'package:oasx/views/battle/battle_view.dart';
 import 'package:oasx/views/home/home_view.dart';
 import 'package:oasx/views/home/tool_view.dart';
 import 'package:oasx/views/home/updater_view.dart';
@@ -19,6 +20,8 @@ Widget content() {
       ['Home', 'Tool'] => const ToolView(),
       // ignore: prefer_const_constructors, unused_local_variable
       [String name, 'Overview'] => Overview(),
+      // 战斗菜单是独立页面（技能图标墙 + 拖拽排序），不走通用的 args 表单
+      [_, 'Battle'] => const BattleView(),
       _ => const Args(),
     };
   });

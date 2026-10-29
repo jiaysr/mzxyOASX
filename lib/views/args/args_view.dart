@@ -19,6 +19,7 @@ import '../../config/translation/i18n_content.dart';
 
 part './group_view.dart';
 part './date_time_picker.dart';
+part './battle_preset_picker.dart';
 part '../../controller/args/args_controller.dart';
 
 class Args extends StatelessWidget {
@@ -222,6 +223,12 @@ class _ArgumentViewState extends State<ArgumentView> {
           value: model.value,
           onChange: onTimeChanged,
         ).constrained(width: landscape ? 200 : null),
+      // 战斗预设：选项来自 /battle/presets（预设是每个脚本实例自己的，不能写成静态 enum）
+      "battle_preset" => BattlePresetPicker(
+          config: Get.find<NavCtrl>().selectedScript.value,
+          value: (model.value ?? '').toString(),
+          onChanged: onBattlePresetChanged,
+        ).constrained(width: landscape ? 220 : null),
       _ =>
         Text(model.value.toString()).constrained(width: landscape ? 200 : null)
     };
@@ -288,6 +295,16 @@ class _ArgumentViewState extends State<ArgumentView> {
           "", "", widget.getGroupName(), model.title, 'time', value);
     });
     showSnakbar(value);
+  }
+
+  /// 战斗配置：存预设 id（空串 = 跟随全局）
+  void onBattlePresetChanged(String value) {
+    setState(() {
+      model.value = value;
+      widget.setArgument(
+          "", "", widget.getGroupName(), model.title, 'string', value);
+    });
+    showSnakbar(value.isEmpty ? 'battle_preset_default'.tr : value);
   }
 
 // -----------------------------------------------------------------------------

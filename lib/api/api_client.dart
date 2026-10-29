@@ -261,6 +261,110 @@ class ApiClient {
     return res.isSuccess && res.data == true;
   }
 
+// ---------------------------------   战斗预设   ----------------------------------
+
+  /// 技能目录 + 预设列表 + 通用设置（一次拿全，页面初始化用）
+  Future<Map<String, dynamic>> getBattleCatalog(String config) async {
+    final res = await request(() => get(
+          '/battle/catalog',
+          queryParameters: {'config': config},
+        ));
+    return (res.data as Map?)?.cast<String, dynamic>() ?? {};
+  }
+
+  /// 只要预设 id/名称（任务设置里的「战斗配置」下拉框用）
+  Future<Map<String, dynamic>> getBattlePresets(String config) async {
+    final res = await request(() => get(
+          '/battle/presets',
+          queryParameters: {'config': config},
+        ));
+    return (res.data as Map?)?.cast<String, dynamic>() ?? {};
+  }
+
+  /// 新建预设：name 为空时后台自动起名，base 是复制哪个预设
+  Future<Map<String, dynamic>> createBattlePreset(
+    String config, {
+    String name = '',
+    String base = 'default',
+  }) async {
+    final res = await request(() => post(
+          '/battle/preset',
+          queryParameters: {'config': config},
+          data: {'name': name, 'base': base},
+        ));
+    return (res.data as Map?)?.cast<String, dynamic>() ?? {};
+  }
+
+  /// 修改预设（默认预设会被后台拒绝）
+  Future<Map<String, dynamic>> updateBattlePreset(
+    String config, {
+    required String id,
+    String? name,
+    List<String>? order,
+    List<String>? disabled,
+  }) async {
+    final res = await request(() => put(
+          '/battle/preset',
+          queryParameters: {'config': config},
+          data: {
+            'id': id,
+            if (name != null) 'name': name,
+            if (order != null) 'order': order,
+            if (disabled != null) 'disabled': disabled,
+          },
+        ));
+    return (res.data as Map?)?.cast<String, dynamic>() ?? {};
+  }
+
+  Future<Map<String, dynamic>> deleteBattlePreset(
+      String config, String id) async {
+    final res = await request(() => delete(
+          '/battle/preset/$id',
+          queryParameters: {'config': config},
+        ));
+    return (res.data as Map?)?.cast<String, dynamic>() ?? {};
+  }
+
+  /// 改通用设置：{identify_threshold, respect_cooldown, cast_interval}
+  Future<Map<String, dynamic>> setBattleCommon(
+      String config, Map<String, dynamic> values) async {
+    final res = await request(() => put(
+          '/battle/common',
+          queryParameters: {'config': config},
+          data: values,
+        ));
+    return (res.data as Map?)?.cast<String, dynamic>() ?? {};
+  }
+
+  /// 预设顺序恢复默认（默认预设后台会直接返回当前数据）
+  Future<Map<String, dynamic>> resetBattlePreset(
+      String config, String presetId) async {
+    final res = await request(() => put(
+          '/battle/reset',
+          queryParameters: {'config': config, 'preset': presetId},
+        ));
+    return (res.data as Map?)?.cast<String, dynamic>() ?? {};
+  }
+
+  /// 连设备识别 7 个技能位（脚本运行中会被后台拒绝，避免两个进程抢设备）
+  ///
+  /// [preset] 用哪个预设算释放计划，留空 = 系统预设
+  Future<Map<String, dynamic>> identifyBattleSlots(String config,
+      {String preset = ''}) async {
+    final res = await request(() => get(
+          '/battle/identify',
+          queryParameters: {'config': config, 'preset': preset},
+        ));
+    return (res.data as Map?)?.cast<String, dynamic>() ?? {};
+  }
+
+  /// 技能图标的完整地址（后台返回的是 /battle/icon/xxx 相对路径）
+  String battleIconUrl(String path) {
+    if (path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    return '$address$path';
+  }
+
 // ---------------------------------   Snackbar --------------------------------
   void showDialog(String title, String content) {
     Get.snackbar(title, content);
