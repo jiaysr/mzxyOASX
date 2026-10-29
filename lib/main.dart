@@ -16,13 +16,16 @@ import 'package:oasx/utils/platform_utils.dart';
 import 'package:oasx/controller/settings.dart';
 import 'package:oasx/config/theme.dart' show lightTheme, darkTheme;
 
+// 默认关闭：只有 --dart-define=DEVICE_PREVIEW=true 时才包一层设备预览，调试更快
+const bool _enableDevicePreview = bool.fromEnvironment('DEVICE_PREVIEW');
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initService();
 
   runApp(
     DevicePreview(
-      enabled: !kReleaseMode && (PlatformUtils.isWindows),
+      enabled: !kReleaseMode && PlatformUtils.isWindows && _enableDevicePreview,
       builder: (context) => const OASXApp(), // Wrap your app
     ),
   );
