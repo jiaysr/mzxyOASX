@@ -21,6 +21,9 @@ import 'package:oasx/views/nav/view_nav.dart';
 class BattleView extends StatelessWidget {
   const BattleView({super.key});
 
+  static const double _maxWidth = 980;
+  static const double _panelGap = 16;
+
   @override
   Widget build(BuildContext context) {
     return GetX<BattleController>(builder: (controller) {
@@ -31,22 +34,23 @@ class BattleView extends StatelessWidget {
       }
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _header(context, controller),
-            if (controller.error.value.isNotEmpty) _errorBanner(context, controller),
+            if (controller.error.value.isNotEmpty)
+              _errorBanner(context, controller),
             if (controller.skills.isEmpty)
               _empty(context)
             else ...[
-              _presetBar(context, controller),
-              _skillCard(context, controller),
-              _settingsCard(context, controller),
-              _identifyCard(context, controller),
+              _presetPanel(context, controller),
+              _skillsPanel(context, controller),
+              _settingsPanel(context, controller),
+              _identifyPanel(context, controller),
             ],
           ],
-        ).constrained(maxWidth: 980),
+        ).constrained(maxWidth: _maxWidth),
       ).alignment(Alignment.topCenter);
     });
   }
@@ -64,35 +68,80 @@ class BattleView extends StatelessWidget {
   // ------------------------------------------------------------------ 顶部
   Widget _header(BuildContext context, BattleController controller) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: _panelGap),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _iconBadge(context, Icons.bolt_rounded, size: 44),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('battle_title'.tr, style: theme.textTheme.headlineSmall),
-                const SizedBox(height: 4),
+                Text(
+                  'battle_title'.tr,
+                  style: theme.textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
                 Text(
                   'battle_priority_hint'.tr,
                   style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ?.copyWith(color: scheme.onSurfaceVariant),
                 ),
               ],
             ),
           ),
-          if (controller.saving.value)
-            const Padding(
-              padding: EdgeInsets.only(right: 8),
-              child: SizedBox(
-                  width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+          const SizedBox(width: 12),
+          _saveStatus(context, controller),
+        ],
+      ),
+    );
+  }
+
+  Widget _saveStatus(BuildContext context, BattleController controller) {
+    final scheme = Theme.of(context).colorScheme;
+    if (controller.saving.value) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const SizedBox(
+          width: 14,
+          height: 14,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+    if (!controller.dirty.value) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: scheme.errorContainer.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: scheme.error,
+              shape: BoxShape.circle,
             ),
-          if (controller.dirty.value && !controller.saving.value)
-            Text('battle_unsaved'.tr,
-                style: theme.textTheme.labelSmall
-                    ?.copyWith(color: theme.colorScheme.error)),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'battle_unsaved'.tr,
+            style: Theme.of(context)
+                .textTheme
+                .labelSmall
+                ?.copyWith(color: scheme.onErrorContainer),
+          ),
         ],
       ),
     );
@@ -101,119 +150,299 @@ class BattleView extends StatelessWidget {
   Widget _errorBanner(BuildContext context, BattleController controller) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: _panelGap),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: scheme.errorContainer,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(controller.error.value,
-          style: TextStyle(color: scheme.onErrorContainer)),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline_rounded,
+              size: 18, color: scheme.onErrorContainer),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              controller.error.value,
+              style: TextStyle(color: scheme.onErrorContainer),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _empty(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.inbox_outlined, size: 28, color: scheme.onSurfaceVariant),
+          const SizedBox(height: 8),
+          Text(
+            'battle_empty_skills'.tr,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium
+                ?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ------------------------------------------------------------------ 面板骨架
+  Widget _panel(
+    BuildContext context, {
+    required Widget header,
+    required Widget child,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: _panelGap),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            header,
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: scheme.outlineVariant.withValues(alpha: 0.45),
+            ),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _panelHeader(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    Widget? trailing,
+  }) {
+    final theme = Theme.of(context);
+    final titleStyle =
+        theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600);
     return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Text('battle_empty_skills'.tr,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium),
+      padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+      child: LayoutBuilder(builder: (context, constraints) {
+        // 窄屏（或长词条语言）下操作区换到第二行，避免标题和按钮互相挤
+        final stack = trailing != null && constraints.maxWidth < 360;
+        final titleRow = Row(
+          children: [
+            _iconBadge(context, icon, size: 32),
+            const SizedBox(width: 10),
+            Expanded(child: Text(title, style: titleStyle)),
+            if (trailing != null && !stack) ...[
+              const SizedBox(width: 8),
+              trailing,
+            ],
+          ],
+        );
+        if (!stack) return titleRow;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            titleRow,
+            const SizedBox(height: 8),
+            Align(alignment: Alignment.centerRight, child: trailing),
+          ],
+        );
+      }),
+    );
+  }
+
+  Widget _iconBadge(BuildContext context, IconData icon, {double size = 32}) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(size * 0.3),
+      ),
+      alignment: Alignment.center,
+      child: Icon(icon, size: size * 0.55, color: scheme.primary),
     );
   }
 
   // ------------------------------------------------------------------ 预设栏
-  Widget _presetBar(BuildContext context, BattleController controller) {
+  Widget _presetPanel(BuildContext context, BattleController controller) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final preset = controller.editingPreset;
     final readonly = controller.isReadonly;
 
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+    return _panel(
+      context,
+      header: _panelHeader(
+        context,
+        icon: Icons.tune_rounded,
+        title: 'battle_presets'.tr,
+        trailing: FilledButton.tonalIcon(
+          style: FilledButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+          ),
+          onPressed: () => _showNewPresetDialog(context, controller),
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: Text('battle_preset_new'.tr),
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Icon(Icons.tune, size: 18, color: theme.colorScheme.primary),
-                const SizedBox(width: 8),
-                Text('battle_presets'.tr, style: theme.textTheme.titleMedium),
-                const SizedBox(width: 12),
-                if (readonly)
-                  Chip(
-                    visualDensity: VisualDensity.compact,
-                    avatar: const Icon(Icons.lock, size: 14),
-                    label: Text('battle_preset_builtin'.tr),
-                  ),
-                const Spacer(),
-                FilledButton.tonalIcon(
-                  onPressed: () => _showNewPresetDialog(context, controller),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: Text('battle_preset_new'.tr),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                DropdownButton<String>(
-                  value: preset?.id,
-                  underline: const SizedBox.shrink(),
-                  items: controller.presets
-                      .map((item) => DropdownMenuItem<String>(
-                            value: item.id,
-                            child: Text(item.name),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) controller.selectPreset(value);
-                  },
-                ),
-                TextButton.icon(
-                  onPressed: readonly || preset == null
-                      ? null
-                      : () => _showRenameDialog(context, controller, preset.name),
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: Text('battle_preset_rename'.tr),
-                ),
-                TextButton.icon(
-                  onPressed: readonly || preset == null
-                      ? null
-                      : () => _confirmDeletePreset(context, controller),
-                  icon: const Icon(Icons.delete_outline, size: 16),
-                  label: Text('battle_preset_delete'.tr),
-                ),
-              ],
+            Container(
+              padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: LayoutBuilder(builder: (context, constraints) {
+                final compact = constraints.maxWidth < 620;
+                final selector = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'battle_preset'.tr,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: preset?.id,
+                        isDense: true,
+                        borderRadius: BorderRadius.circular(12),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface,
+                        ),
+                        icon: Icon(Icons.expand_more_rounded,
+                            color: scheme.onSurfaceVariant),
+                        items: controller.presets
+                            .map((item) => DropdownMenuItem<String>(
+                                  value: item.id,
+                                  child: Text(item.name),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) controller.selectPreset(value);
+                        },
+                      ),
+                    ),
+                  ],
+                );
+                final actions = Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: [
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: readonly || preset == null
+                          ? null
+                          : () => _showRenameDialog(
+                              context, controller, preset.name),
+                      icon: const Icon(Icons.drive_file_rename_outline_rounded,
+                          size: 18),
+                      label: Text('battle_preset_rename'.tr),
+                    ),
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        foregroundColor: scheme.error,
+                      ),
+                      onPressed: readonly || preset == null
+                          ? null
+                          : () => _confirmDeletePreset(context, controller),
+                      icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                      label: Text('battle_preset_delete'.tr),
+                    ),
+                  ],
+                );
+                if (compact) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      selector,
+                      const SizedBox(height: 4),
+                      actions,
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    Expanded(child: selector),
+                    const SizedBox(width: 12),
+                    actions,
+                  ],
+                );
+              }),
             ),
             if (readonly) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.info_outline,
-                      size: 16, color: theme.colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      'battle_preset_builtin_hint'.tr,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 8, 8, 12),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHighest.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Chip(
+                          visualDensity: VisualDensity.compact,
+                          avatar: const Icon(Icons.lock_outline_rounded,
+                              size: 14),
+                          label: Text('battle_preset_builtin'.tr),
+                          side:
+                              BorderSide(color: scheme.outlineVariant),
+                          backgroundColor: Colors.transparent,
+                        ),
+                        TextButton(
+                          onPressed: () => _showNewPresetDialog(
+                              context, controller,
+                              base: preset?.id ?? 'default'),
+                          child: Text('battle_preset_new'.tr),
+                        ),
+                      ],
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () => _showNewPresetDialog(context, controller,
-                        base: preset?.id ?? 'default'),
-                    child: Text('battle_preset_new'.tr),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4, right: 8),
+                      child: Text(
+                        'battle_preset_builtin_hint'.tr,
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ],
@@ -223,104 +452,146 @@ class BattleView extends StatelessWidget {
   }
 
   // ------------------------------------------------------------------ 技能列表
-  Widget _skillCard(BuildContext context, BattleController controller) {
+  Widget _skillsPanel(BuildContext context, BattleController controller) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final skills = controller.orderedSkills;
     final readonly = controller.isReadonly;
     final hasSelection = controller.selected.isNotEmpty;
+    final narrowHeader = MediaQuery.of(context).size.width < 560;
 
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+    return _panel(
+      context,
+      header: _panelHeader(
+        context,
+        icon: Icons.bolt_rounded,
+        title: 'battle_skills'.tr,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!narrowHeader)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${'battle_enabled_count'.tr} ${controller.enabledCount}/${skills.length}',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            if (!narrowHeader) const SizedBox(width: 4),
+            if (narrowHeader)
+              IconButton(
+                tooltip: 'battle_reset_default'.tr,
+                onPressed: readonly ? null : controller.resetOrder,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+                icon: const Icon(Icons.restart_alt_rounded, size: 18),
+              )
+            else
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                ),
+                onPressed: readonly ? null : controller.resetOrder,
+                icon: const Icon(Icons.restart_alt_rounded, size: 18),
+                label: Text('battle_reset_default'.tr),
+              ),
+          ],
+        ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 12, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text('battle_skills'.tr, style: theme.textTheme.titleMedium),
-                    const SizedBox(width: 12),
-                    Text(
-                      '${'battle_enabled_count'.tr} ${controller.enabledCount}/${skills.length}',
-                      style: theme.textTheme.labelMedium
-                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                    ),
-                    const Spacer(),
-                    TextButton.icon(
-                      onPressed: readonly ? null : controller.resetOrder,
-                      icon: const Icon(Icons.restart_alt, size: 18),
-                      label: Text('battle_reset_default'.tr),
-                    ),
-                  ],
-                ),
-                if (!readonly)
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(
-                        hasSelection
-                            ? 'battle_selected'.tr.replaceAll(
-                                '%d', '${controller.selected.length}')
-                            : '',
-                        style: theme.textTheme.labelMedium
-                            ?.copyWith(color: theme.colorScheme.primary),
+          if (!readonly)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+              child: hasSelection
+                  ? Container(
+                      padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+                      decoration: BoxDecoration(
+                        color: scheme.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      TextButton(
-                        onPressed: hasSelection
-                            ? controller.clearSelection
-                            : controller.selectAll,
-                        child: Text(hasSelection
-                            ? 'battle_select_none'.tr
-                            : 'battle_select_all'.tr),
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle_outline_rounded,
+                                  size: 16, color: scheme.primary),
+                              const SizedBox(width: 6),
+                              Text(
+                                'battle_selected'.tr.replaceAll(
+                                    '%d', '${controller.selected.length}'),
+                                style: theme.textTheme.labelMedium
+                                    ?.copyWith(color: scheme.primary),
+                              ),
+                            ],
+                          ),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            onPressed: controller.clearSelection,
+                            child: Text('battle_select_none'.tr),
+                          ),
+                          FilledButton.tonal(
+                            style: FilledButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            onPressed: () => controller.batchSetEnabled(true),
+                            child: Text('battle_batch_enable'.tr),
+                          ),
+                          FilledButton.tonal(
+                            style: FilledButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            onPressed: () => controller.batchSetEnabled(false),
+                            child: Text('battle_batch_disable'.tr),
+                          ),
+                        ],
                       ),
-                      if (hasSelection) ...[
-                        FilledButton.tonal(
-                          onPressed: () => controller.batchSetEnabled(true),
-                          child: Text('battle_batch_enable'.tr),
+                    )
+                  : Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        style: TextButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
                         ),
-                        FilledButton.tonal(
-                          onPressed: () => controller.batchSetEnabled(false),
-                          child: Text('battle_batch_disable'.tr),
-                        ),
-                      ],
-                    ],
-                  ),
-              ],
+                        onPressed: controller.selectAll,
+                        icon: const Icon(Icons.checklist_rounded, size: 18),
+                        label: Text('battle_select_all'.tr),
+                      ),
+                    ),
             ),
-          ),
-          const Divider(height: 1),
-          SizedBox(
-            height: _listHeight(context),
-            child: ReorderableListView.builder(
-              buildDefaultDragHandles: false,
-              itemCount: skills.length,
-              onReorder: controller.reorder,
-              itemBuilder: (context, index) => _skillTile(
-                context,
-                controller,
-                skills[index],
-                index,
-                readonly: readonly,
-              ),
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            buildDefaultDragHandles: false,
+            itemCount: skills.length,
+            onReorder: controller.reorder,
+            itemBuilder: (context, index) => _skillTile(
+              context,
+              controller,
+              skills[index],
+              index,
+              readonly: readonly,
             ),
           ),
         ],
       ),
     );
-  }
-
-  double _listHeight(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    return (screenHeight * 0.52).clamp(280.0, 620.0);
   }
 
   Widget _skillTile(BuildContext context, BattleController controller,
@@ -328,133 +599,197 @@ class BattleView extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final disabled = controller.isDisabled(skill.id);
-    final compact = MediaQuery.of(context).size.width < 720;
+    final width = MediaQuery.of(context).size.width;
+    final compact = width < 720;
+    final narrow = width < 560;
 
-    return Container(
+    return _HoverRow(
       key: ValueKey(skill.id),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.6)),
-        ),
+      hoverColor: scheme.primary.withValues(alpha: 0.04),
+      background:
+          disabled ? scheme.surfaceContainerHighest.withValues(alpha: 0.35) : null,
+      border: Border(
+        bottom: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.45)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 40,
-            child: Checkbox(
-              value: controller.isSelected(skill.id),
-              onChanged: readonly
-                  ? null
-                  : (value) =>
-                      controller.toggleSelect(skill.id, value ?? false),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 4, 8, 4),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 40,
+              child: Checkbox(
+                visualDensity: VisualDensity.compact,
+                value: controller.isSelected(skill.id),
+                onChanged: readonly
+                    ? null
+                    : (value) =>
+                        controller.toggleSelect(skill.id, value ?? false),
+              ),
             ),
-          ),
-          ReorderableDragStartListener(
-            index: index,
-            enabled: !readonly,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: Icon(Icons.drag_indicator,
-                  size: 20,
-                  color: (disabled || readonly)
-                      ? scheme.onSurfaceVariant.withValues(alpha: 0.35)
-                      : scheme.onSurfaceVariant),
+            ReorderableDragStartListener(
+              index: index,
+              enabled: !readonly,
+              child: Icon(
+                Icons.drag_indicator_rounded,
+                size: 20,
+                color: (disabled || readonly)
+                    ? scheme.onSurfaceVariant.withValues(alpha: 0.35)
+                    : scheme.onSurfaceVariant,
+              ),
             ),
-          ),
-          _indexChip(context, controller, index, readonly),
-          const SizedBox(width: 4),
-          Opacity(opacity: disabled ? 0.45 : 1, child: _skillIcon(context, skill)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
+            const SizedBox(width: 2),
+            _priorityBadge(context, controller, index,
+                readonly: readonly, disabled: disabled),
+            const SizedBox(width: 10),
+            Opacity(
+              opacity: disabled ? 0.45 : 1,
+              child: _skillIcon(context, skill),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          skill.name.tr,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: disabled ? scheme.onSurfaceVariant : null,
+                            decoration: disabled
+                                ? TextDecoration.lineThrough
+                                : null,
+                          ),
+                        ),
+                      ),
+                      if (!narrow) ...[
+                        const SizedBox(width: 8),
+                        _classTag(context, controller, skill, disabled),
+                      ],
+                    ],
+                  ),
+                  if (!compact)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
                       child: Text(
-                        skill.name.tr,
+                        skill.description.tr,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: disabled ? scheme.onSurfaceVariant : null,
-                          decoration:
-                              disabled ? TextDecoration.lineThrough : null,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant.withValues(
+                              alpha: disabled ? 0.5 : 1),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    _classTag(context, skill, disabled),
-                  ],
-                ),
-                if (!compact)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      skill.description.tr,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant.withValues(
-                              alpha: disabled ? 0.5 : 1)),
-                    ),
-                  ),
-              ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (!narrow)
+              _reorderCluster(context, controller, index,
+                  readonly: readonly, disabled: disabled),
+            const SizedBox(width: 4),
+            Tooltip(
+              message: 'battle_skill_disabled'.tr,
+              child: Switch(
+                value: !disabled,
+                onChanged: readonly
+                    ? null
+                    : (value) => controller.toggleSkill(skill.id, value),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _priorityBadge(BuildContext context, BattleController controller,
+      int index, {required bool readonly, required bool disabled}) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isTop = index < 3;
+    final background = isTop
+        ? scheme.primary.withValues(alpha: disabled ? 0.4 : 1)
+        : scheme.surfaceContainerHighest.withValues(alpha: disabled ? 0.4 : 0.9);
+    final foreground = isTop ? scheme.onPrimary : scheme.onSurfaceVariant;
+
+    return Tooltip(
+      message: 'battle_move_to'.tr,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap:
+            readonly ? null : () => _showMoveToDialog(context, controller, index),
+        child: Container(
+          width: 28,
+          height: 28,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: background,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            '${index + 1}',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          IconButton(
+        ),
+      ),
+    );
+  }
+
+  Widget _reorderCluster(BuildContext context, BattleController controller,
+      int index, {required bool readonly, required bool disabled}) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(9),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _miniIconButton(
+            icon: Icons.keyboard_arrow_up_rounded,
             tooltip: 'battle_move_up'.tr,
-            visualDensity: VisualDensity.compact,
-            onPressed:
-                readonly || index == 0 ? null : () => controller.moveUp(index),
-            icon: const Icon(Icons.arrow_upward, size: 18),
+            onPressed: readonly || index == 0
+                ? null
+                : () => controller.moveUp(index),
           ),
-          IconButton(
+          Container(
+            width: 1,
+            height: 16,
+            color: scheme.outlineVariant.withValues(alpha: 0.7),
+          ),
+          _miniIconButton(
+            icon: Icons.keyboard_arrow_down_rounded,
             tooltip: 'battle_move_down'.tr,
-            visualDensity: VisualDensity.compact,
             onPressed: readonly || index >= controller.orderedSkills.length - 1
                 ? null
                 : () => controller.moveDown(index),
-            icon: const Icon(Icons.arrow_downward, size: 18),
-          ),
-          Tooltip(
-            message: 'battle_skill_disabled'.tr,
-            child: Switch(
-              value: !disabled,
-              onChanged: readonly
-                  ? null
-                  : (value) => controller.toggleSkill(skill.id, value),
-            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _indexChip(BuildContext context, BattleController controller,
-      int index, bool readonly) {
-    final theme = Theme.of(context);
-    final enabled = !readonly;
-    return Tooltip(
-      message: 'battle_move_to'.tr,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(6),
-        onTap: enabled
-            ? () => _showMoveToDialog(context, controller, index)
-            : null,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          child: Text(
-            '${index + 1}',
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: enabled
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
+  Widget _miniIconButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback? onPressed,
+  }) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints.tightFor(width: 30, height: 30),
+      icon: Icon(icon, size: 18),
     );
   }
 
@@ -465,7 +800,7 @@ class BattleView extends StatelessWidget {
       height: 40,
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
       alignment: Alignment.center,
       child: Text(
@@ -477,7 +812,7 @@ class BattleView extends StatelessWidget {
     final url = ApiClient().battleIconUrl(skill.iconUrl);
     if (url.isEmpty) return fallback;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(10),
       child: Image.network(
         url,
         width: 40,
@@ -488,72 +823,122 @@ class BattleView extends StatelessWidget {
     );
   }
 
-  Widget _classTag(BuildContext context, BattleSkill skill, bool disabled) {
+  Widget _classTag(BuildContext context, BattleController controller,
+      BattleSkill skill, bool disabled) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final color = _classColor(controller, skill) ??
+        (disabled ? scheme.onSurfaceVariant : scheme.secondary);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: theme.colorScheme.secondaryContainer
-            .withValues(alpha: disabled ? 0.4 : 0.8),
-        borderRadius: BorderRadius.circular(6),
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
-        skill.className.tr,
-        style: theme.textTheme.labelSmall
-            ?.copyWith(color: theme.colorScheme.onSecondaryContainer),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: disabled ? 0.4 : 1),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            skill.className.tr,
+            style: theme.textTheme.labelSmall
+                ?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+        ],
       ),
     );
   }
 
+  Color? _classColor(BattleController controller, BattleSkill skill) {
+    for (final item in controller.classes) {
+      if (item.id != skill.classId) continue;
+      final hex = item.color.replaceFirst('#', '');
+      final value = int.tryParse(hex.length == 6 ? 'FF$hex' : hex, radix: 16);
+      if (value != null) return Color(value);
+    }
+    return null;
+  }
+
   // ------------------------------------------------------------------ 设置
-  Widget _settingsCard(BuildContext context, BattleController controller) {
+  Widget _settingsPanel(BuildContext context, BattleController controller) {
     final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+    final scheme = theme.colorScheme;
+    return _panel(
+      context,
+      header: _panelHeader(
+        context,
+        icon: Icons.settings_suggest_rounded,
+        title: 'battle_settings'.tr,
       ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Row(children: [
-              Icon(Icons.settings_suggest, size: 18, color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
-              Text('battle_settings'.tr, style: theme.textTheme.titleMedium),
-            ]),
-          ),
-          SwitchListTile(
-            dense: true,
-            value: controller.respectCooldown.value,
-            onChanged: controller.setRespectCooldown,
-            title: Text('battle_respect_cooldown'.tr),
-          ),
-          _sliderTile(
-            context,
-            title: 'battle_similarity'.tr,
-            help: 'battle_similarity_help'.tr,
-            value: controller.threshold.value,
-            min: 0.4,
-            max: 0.95,
-            divisions: 11,
-            label: controller.threshold.value.toStringAsFixed(2),
-            onChanged: controller.setThreshold,
-          ),
-          _sliderTile(
-            context,
-            title: 'battle_cast_interval'.tr,
-            value: controller.castInterval.value,
-            min: 0,
-            max: 1,
-            divisions: 20,
-            label: '${controller.castInterval.value.toStringAsFixed(2)} s',
-            onChanged: controller.setCastInterval,
-          ),
-          const SizedBox(height: 8),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SwitchListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              secondary: Icon(Icons.timer_outlined, color: scheme.primary),
+              value: controller.respectCooldown.value,
+              onChanged: controller.setRespectCooldown,
+              title: Text(
+                'battle_respect_cooldown'.tr,
+                style: theme.textTheme.bodyLarge,
+              ),
+            ),
+            const SizedBox(height: 8),
+            LayoutBuilder(builder: (context, constraints) {
+              final wide = constraints.maxWidth >= 700;
+              final similarity = _sliderTile(
+                context,
+                title: 'battle_similarity'.tr,
+                help: 'battle_similarity_help'.tr,
+                value: controller.threshold.value,
+                min: 0.4,
+                max: 0.95,
+                divisions: 11,
+                label: controller.threshold.value.toStringAsFixed(2),
+                minLabel: '0.40',
+                maxLabel: '0.95',
+                onChanged: controller.setThreshold,
+              );
+              final interval = _sliderTile(
+                context,
+                title: 'battle_cast_interval'.tr,
+                value: controller.castInterval.value,
+                min: 0,
+                max: 1,
+                divisions: 20,
+                label: '${controller.castInterval.value.toStringAsFixed(2)} s',
+                minLabel: '0 s',
+                maxLabel: '1.00 s',
+                onChanged: controller.setCastInterval,
+              );
+              if (!wide) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [similarity, const SizedBox(height: 12), interval],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: similarity),
+                  const SizedBox(width: 32),
+                  Expanded(child: interval),
+                ],
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -567,47 +952,88 @@ class BattleView extends StatelessWidget {
     required double max,
     required int divisions,
     required String label,
+    required String minLabel,
+    required String maxLabel,
     required ValueChanged<double> onChanged,
   }) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: theme.textTheme.bodyMedium),
-                    if (help != null && help.isNotEmpty)
-                      Text(help,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant)),
-                  ],
-                ),
+    final scheme = theme.colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.w500),
+                  ),
+                  if (help != null && help.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        help,
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
+                    ),
+                ],
               ),
-              Text(label, style: theme.textTheme.labelLarge),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                label,
+                style: theme.textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        Slider(
+          value: value.clamp(min, max),
+          min: min,
+          max: max,
+          divisions: divisions,
+          label: label,
+          onChanged: onChanged,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                minLabel,
+                style: theme.textTheme.labelSmall
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
+              Text(
+                maxLabel,
+                style: theme.textTheme.labelSmall
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
             ],
           ),
-          Slider(
-            value: value.clamp(min, max),
-            min: min,
-            max: max,
-            divisions: divisions,
-            label: label,
-            onChanged: onChanged,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   // ------------------------------------------------------------------ 识别
-  Widget _identifyCard(BuildContext context, BattleController controller) {
+  Widget _identifyPanel(BuildContext context, BattleController controller) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final result = controller.identifyResult.value;
     final plan = ((result?['plan'] as List?) ?? const [])
         .map((e) => (e as Map).cast<String, dynamic>())
@@ -616,97 +1042,255 @@ class BattleView extends StatelessWidget {
         .map((e) => (e as Map).cast<String, dynamic>())
         .toList();
 
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+    return _panel(
+      context,
+      header: _panelHeader(
+        context,
+        icon: Icons.center_focus_strong_rounded,
+        title: 'battle_identify_result'.tr,
+        trailing: FilledButton.tonalIcon(
+          style: FilledButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+          ),
+          onPressed: controller.identifying.value ? null : controller.identify,
+          icon: controller.identifying.value
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.visibility_rounded, size: 18),
+          label: Text(controller.identifying.value
+              ? 'battle_identifying'.tr
+              : 'battle_identify'.tr),
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+        child: result == null
+            ? _hintBox(
+                context,
+                icon: Icons.info_outline_rounded,
+                text: 'battle_identify_empty'.tr,
+              )
+            : result['ok'] != true
+                ? Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: scheme.errorContainer.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline_rounded,
+                            size: 18, color: scheme.onErrorContainer),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${result['message'] ?? 'battle_identify_failed'.tr}',
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: scheme.onErrorContainer),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _sectionLabel(context, 'battle_plan_preview'.tr),
+                      if (plan.isEmpty)
+                        Text('—', style: theme.textTheme.bodyMedium)
+                      else
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (int i = 0; i < plan.length; i++)
+                              _planChip(context, i, plan[i]),
+                          ],
+                        ),
+                      const SizedBox(height: 18),
+                      _sectionLabel(context, 'battle_identify_result'.tr),
+                      if (slots.isEmpty)
+                        Text('—', style: theme.textTheme.bodyMedium)
+                      else
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final slot in slots)
+                              _slotCard(context, slot),
+                          ],
+                        ),
+                    ],
+                  ),
+      ),
+    );
+  }
+
+  Widget _hintBox(BuildContext context,
+      {required IconData icon, required String text}) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: scheme.onSurfaceVariant),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionLabel(BuildContext context, String text) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: theme.textTheme.labelLarge?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+          letterSpacing: 0.4,
+        ),
+      ),
+    );
+  }
+
+  Widget _planChip(BuildContext context, int index, Map<String, dynamic> item) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final recognized = item['recognized'] == true;
+    final name = recognized
+        ? (item['name'] ?? '').toString()
+        : 'battle_unknown_skill'.tr;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(6, 6, 12, 6),
+      decoration: BoxDecoration(
+        color: recognized
+            ? scheme.primary.withValues(alpha: 0.08)
+            : scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 22,
+            height: 22,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: recognized
+                  ? scheme.primary
+                  : scheme.onSurfaceVariant.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              '${index + 1}',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: recognized ? scheme.onPrimary : scheme.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            (item['slotName'] ?? '').toString(),
+            style: theme.textTheme.labelSmall
+                ?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            name,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: recognized ? FontWeight.w500 : FontWeight.w400,
+              color: recognized ? scheme.onSurface : scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _slotCard(BuildContext context, Map<String, dynamic> slot) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final recognized = slot['skill'] != null;
+    final score = ((slot['score'] as num?) ?? 0).toStringAsFixed(2);
+    return Container(
+      width: 208,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: recognized
+            ? scheme.primaryContainer.withValues(alpha: 0.35)
+            : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: recognized
+                  ? scheme.primary
+                  : scheme.onSurfaceVariant.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              recognized ? Icons.check_rounded : Icons.help_outline_rounded,
+              size: 16,
+              color: recognized ? scheme.onPrimary : scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.center_focus_strong,
-                    size: 18, color: theme.colorScheme.primary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text('battle_identify_result'.tr,
-                      style: theme.textTheme.titleMedium),
+                Text(
+                  (slot['slotName'] ?? '').toString(),
+                  style: theme.textTheme.labelSmall
+                      ?.copyWith(color: scheme.onSurfaceVariant),
                 ),
-                FilledButton.tonalIcon(
-                  onPressed: controller.identifying.value
-                      ? null
-                      : controller.identify,
-                  icon: controller.identifying.value
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.visibility, size: 18),
-                  label: Text(controller.identifying.value
-                      ? 'battle_identifying'.tr
-                      : 'battle_identify'.tr),
+                const SizedBox(height: 1),
+                Text(
+                  recognized
+                      ? (slot['name'] ?? '').toString()
+                      : 'battle_unknown_skill'.tr,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: recognized
+                        ? scheme.onSurface
+                        : scheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            if (result == null)
-              Text('battle_identify_empty'.tr,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant))
-            else if (result['ok'] != true)
-              Text('${result['message'] ?? 'battle_identify_failed'.tr}',
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.error))
-            else ...[
-              Text('battle_plan_preview'.tr,
-                  style: theme.textTheme.labelLarge),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  for (int i = 0; i < plan.length; i++)
-                    Chip(
-                      visualDensity: VisualDensity.compact,
-                      label: Text(
-                        '#${i + 1} ${plan[i]['slotName'] ?? ''} · '
-                        '${(plan[i]['recognized'] == true) ? (plan[i]['name'] ?? '') : 'battle_unknown_skill'.tr}',
-                      ),
-                    ),
-                  if (plan.isEmpty) Text('—', style: theme.textTheme.bodyMedium),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text('battle_identify_result'.tr,
-                  style: theme.textTheme.labelLarge),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  for (final slot in slots)
-                    Chip(
-                      visualDensity: VisualDensity.compact,
-                      backgroundColor: slot['skill'] == null
-                          ? theme.colorScheme.surfaceContainerHighest
-                          : null,
-                      label: Text(
-                        '${slot['slotName'] ?? ''}: '
-                        '${slot['skill'] == null ? 'battle_unknown_skill'.tr : slot['name']} '
-                        '(${((slot['score'] as num?) ?? 0).toStringAsFixed(2)})',
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ],
-        ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            score,
+            style: theme.textTheme.labelSmall
+                ?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+        ],
       ),
     );
   }
@@ -853,6 +1437,47 @@ class BattleView extends StatelessWidget {
     if (moved != null) {
       controller.moveTo(index, moved);
     }
+  }
+}
+
+/// 技能行的悬停底色（桌面端扫列表时给一点位置感）
+class _HoverRow extends StatefulWidget {
+  const _HoverRow({
+    super.key,
+    required this.child,
+    required this.hoverColor,
+    this.background,
+    this.border,
+  });
+
+  final Widget child;
+  final Color hoverColor;
+  final Color? background;
+  final BoxBorder? border;
+
+  @override
+  State<_HoverRow> createState() => _HoverRowState();
+}
+
+class _HoverRowState extends State<_HoverRow> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          color: widget.background ??
+              (_hovered ? widget.hoverColor : Colors.transparent),
+          border: widget.border,
+        ),
+        child: widget.child,
+      ),
+    );
   }
 }
 
