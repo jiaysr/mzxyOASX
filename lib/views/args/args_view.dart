@@ -28,6 +28,8 @@ class Args extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetX<ArgsController>(builder: (controller) {
+      // 订阅条件显示变化：勾选/取消同一时刻的 boss 时重建字段列表
+      controller.formRevision.value;
       return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: ExpansionTileGroup(
@@ -62,6 +64,10 @@ class Args extends StatelessWidget {
     GroupsModel groupsModel = controller.groupsData.value[groupName]!;
     List<Widget> result = [const Divider()];
     for (int i = 0; i < groupsModel.members.length; i++) {
+      final member = groupsModel.members[i];
+      if (member is ArgumentModel && !controller.isVisible(member)) {
+        continue;
+      }
       result.add(ArgumentView(
         setArgument: controller.setArgument,
         getGroupName: groupsModel.getGroupName,
@@ -240,6 +246,8 @@ class _ArgumentViewState extends State<ArgumentView> {
           "", "", widget.getGroupName(), model.title, 'boolean', value);
       model.value = value;
     });
+    // 时间勾选变化会影响「同时段双 boss」条件字段的显隐
+    Get.find<ArgsController>().touch();
     showSnakbar(value);
   }
 
