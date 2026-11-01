@@ -8,7 +8,10 @@ class ServerController extends GetxController with LogMixin {
   final log = ''.obs;
   final deployContent = ''.obs;
   Shell? shell;
-  var shellController = ShellLinesController();
+
+  /// 逐行自适应解码（UTF-8 优先，回退 GBK），避免 git 输出与 python 输出
+  /// 编码不同导致的中文乱码。
+  final shellController = ShellOutputLines();
 
   @override
   void onInit() {
@@ -79,20 +82,27 @@ class ServerController extends GetxController with LogMixin {
     return true;
   }
 
-  String get pathGit => '${rootPathServer.value}\\toolkit\\Git\\mingw64\\bin"';
+  String get pathGit => '${rootPathServer.value}\\toolkit\\Git\\mingw64\\bin';
   String get pathPython => '${rootPathServer.value}\\toolkit';
   String get pathAdb =>
       '${rootPathServer.value}\\toolkit\\Lib\\site-packages\\adbutils\\binaries';
   String get pathScripts => '${rootPathServer.value}\\toolkit\\Scripts';
   Map<String, String> get pathPATH => {
-        'PATH':
-            '${rootPathServer.value},$pathGit,$pathPython,$pathAdb,$pathScripts'
+        // Windows 的 PATH 分隔符是分号，之前用逗号拼接会让这些目录全部失效
+        'PATH': [
+          rootPathServer.value,
+          pathGit,
+          pathPython,
+          pathAdb,
+          pathScripts,
+        ].join(';'),
       };
   Shell get getShell => Shell(
         workingDirectory: rootPathServer.value,
         runInShell: true,
         environment: pathPATH,
         stdout: shellController.sink,
+        stderr: shellController.sink,
         verbose: false,
       );
 
