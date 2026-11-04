@@ -87,6 +87,7 @@ class I18n {
   static const String config_add = 'Add new config';
   static const String config_copy_from_exist = 'Copy from existing config';
   static const String setting_saved = 'Setting saved';
+  static const String value_out_of_range = 'value_out_of_range';
 
   // 菜单项相关
   static const String overview = 'Overview';

@@ -11,6 +11,26 @@ void main() {
     // expect(argsTest.testArgsView, 1);
   });
 
+  test('argument range metadata is parsed and enforced', () {
+    final model = ArgumentModel.fromJson({
+      'name': 'shayu_multi_count',
+      'value': 2,
+      'type': 'integer',
+      'minimum': 1,
+      'maximum': 2,
+      'defaultValue': 2,
+      'description': '沙狱[多人]每天挑战次数',
+    });
+
+    expect(model.minimum, 1);
+    expect(model.maximum, 2);
+    expect(model.rangeHint, '1 ~ 2');
+    expect(model.isInRange(1), isTrue);
+    expect(model.isInRange(2), isTrue);
+    expect(model.isInRange(0), isFalse);
+    expect(model.isInRange(5), isFalse);
+  });
+
   test('world boss dual fields visible only with two same-time bosses', () {
     final controller = ArgsController();
     final wuqing19 = ArgumentModel(null, null, null, null, null,

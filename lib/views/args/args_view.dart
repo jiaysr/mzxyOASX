@@ -99,6 +99,14 @@ class ArgumentView extends StatefulWidget {
 class _ArgumentViewState extends State<ArgumentView> {
   Timer? timer;
   bool landscape = true;
+  // 数值输入越界时的行内错误（null = 正常）
+  String? numberError;
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
 
   ArgumentModel get model {
     ArgsController controller = Get.find();
@@ -182,28 +190,8 @@ class _ArgumentViewState extends State<ArgumentView> {
             timer = Timer(const Duration(milliseconds: 1000),
                 () => onStringChanged(value));
           }).constrained(width: landscape ? 200 : null),
-      "number" => TextFormField(
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp('[-0-9.]')),
-          ],
-          initialValue: model.value.toString(),
-          onChanged: (value) {
-            timer?.cancel();
-            timer = Timer(const Duration(milliseconds: 1000),
-                () => onNumberChanged(value));
-          }).constrained(width: landscape ? 200 : null),
-      "integer" => TextFormField(
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp('[-0-9]')),
-          ],
-          initialValue: model.value.toString(),
-          onChanged: (value) {
-            timer?.cancel();
-            timer = Timer(const Duration(milliseconds: 1000),
-                () => onIntegerChanged(value));
-          }).constrained(width: landscape ? 200 : null),
+      "number" => _numberField(isInteger: false),
+      "integer" => _numberField(isInteger: true),
       "enum" => DropdownButton<String>(
           isExpanded: !landscape,
           value: model.value.toString(),
@@ -240,6 +228,28 @@ class _ArgumentViewState extends State<ArgumentView> {
     };
   }
 
+  Widget _numberField({required bool isInteger}) {
+    return TextFormField(
+      keyboardType: TextInputType.numberWithOptions(
+          signed: true, decimal: !isInteger),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(
+            RegExp(isInteger ? '[-0-9]' : '[-0-9.]')),
+      ],
+      initialValue: model.value.toString(),
+      decoration: InputDecoration(
+        isDense: true,
+        helperText: model.rangeHint,
+        errorText: numberError,
+      ),
+      onChanged: (value) {
+        timer?.cancel();
+        timer = Timer(const Duration(milliseconds: 1000),
+            () => _submitNumber(value, isInteger: isInteger));
+      },
+    ).constrained(width: landscape ? 200 : null);
+  }
+
   void onCheckboxChanged(bool? value) {
     setState(() {
       widget.setArgument(
@@ -257,15 +267,34 @@ class _ArgumentViewState extends State<ArgumentView> {
     showSnakbar(value);
   }
 
-  void onNumberChanged(String? value) {
-    widget.setArgument(
-        "", "", widget.getGroupName(), model.title, 'number', value);
-    showSnakbar(value);
-  }
+  void onNumberChanged(String? value) =>
+      _submitNumber(value, isInteger: false);
 
-  void onIntegerChanged(String? value) {
-    widget.setArgument(
-        "", "", widget.getGroupName(), model.title, 'integer', value);
+  void onIntegerChanged(String? value) =>
+      _submitNumber(value, isInteger: true);
+
+  void _submitNumber(String? value, {required bool isInteger}) {
+    if (!mounted) return;
+    final number =
+        isInteger ? int.tryParse(value ?? '') : double.tryParse(value ?? '');
+    // 空输入 / 还没输完：先不提交，等用户继续输入
+    if (number == null) {
+      if (numberError != null) {
+        setState(() => numberError = null);
+      }
+      return;
+    }
+    if (!model.isInRange(number)) {
+      setState(() {
+        numberError = '${I18n.value_out_of_range.tr}: ${model.rangeHint}';
+      });
+      return;
+    }
+    if (numberError != null) {
+      setState(() => numberError = null);
+    }
+    widget.setArgument("", "", widget.getGroupName(), model.title,
+        isInteger ? 'integer' : 'number', value);
     showSnakbar(value);
   }
 

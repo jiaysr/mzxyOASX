@@ -148,4 +148,23 @@ class ArgumentModel {
   }
 
   set setValue(dynamic newValue) => value = newValue;
+
+  /// 数值是否在配置范围内（后端 pydantic 的 ge/le）
+  bool isInRange(num number) {
+    final min = minimum;
+    final max = maximum;
+    if (min != null && number < min) return false;
+    if (max != null && number > max) return false;
+    return true;
+  }
+
+  /// 范围提示（如 1 ~ 2）；没有配置范围时返回 null
+  String? get rangeHint {
+    if (minimum == null && maximum == null) return null;
+    final min = minimum?.toString() ?? '';
+    final max = maximum?.toString() ?? '';
+    if (minimum != null && maximum != null) return '$min ~ $max';
+    if (minimum != null) return '≥ $min';
+    return '≤ $max';
+  }
 }
