@@ -302,6 +302,10 @@ class ApiClient {
     String? name,
     List<String>? order,
     List<String>? disabled,
+    int? clicks,
+    double? clickInterval,
+    int? attempts,
+    double? cooldownTimeout,
   }) async {
     final res = await request(() => put(
           '/battle/preset',
@@ -311,6 +315,10 @@ class ApiClient {
             if (name != null) 'name': name,
             if (order != null) 'order': order,
             if (disabled != null) 'disabled': disabled,
+            if (clicks != null) 'clicks': clicks,
+            if (clickInterval != null) 'click_interval': clickInterval,
+            if (attempts != null) 'attempts': attempts,
+            if (cooldownTimeout != null) 'cooldown_timeout': cooldownTimeout,
           },
         ));
     return (res.data as Map?)?.cast<String, dynamic>() ?? {};
@@ -325,7 +333,7 @@ class ApiClient {
     return (res.data as Map?)?.cast<String, dynamic>() ?? {};
   }
 
-  /// 改通用设置：{identify_threshold, clicks, click_interval, attempts, cooldown_timeout}
+  /// 改通用设置：{identify_threshold}（释放节奏在预设里）
   Future<Map<String, dynamic>> setBattleCommon(
       String config, Map<String, dynamic> values) async {
     final res = await request(() => put(

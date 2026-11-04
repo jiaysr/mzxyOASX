@@ -974,6 +974,8 @@ class BattleView extends StatelessWidget {
             const SizedBox(height: 4),
             LayoutBuilder(builder: (context, constraints) {
               final wide = constraints.maxWidth >= 700;
+              // 释放节奏挂在当前编辑的预设上：系统预设只读，滑块禁用
+              final presetReadonly = controller.isReadonly;
               final clicks = _sliderTile(
                 context,
                 title: 'battle_clicks'.tr,
@@ -985,7 +987,9 @@ class BattleView extends StatelessWidget {
                 label: '${controller.clicks}',
                 minLabel: '1',
                 maxLabel: '4',
-                onChanged: (value) => controller.setClicks(value.round()),
+                onChanged: presetReadonly
+                    ? null
+                    : (value) => controller.setClicks(value.round()),
               );
               final interval = _sliderTile(
                 context,
@@ -998,7 +1002,8 @@ class BattleView extends StatelessWidget {
                 label: '${controller.clickInterval.toStringAsFixed(2)} s',
                 minLabel: '0.05 s',
                 maxLabel: '1.00 s',
-                onChanged: controller.setClickInterval,
+                onChanged:
+                    presetReadonly ? null : controller.setClickInterval,
               );
               final attempts = _sliderTile(
                 context,
@@ -1011,7 +1016,9 @@ class BattleView extends StatelessWidget {
                 label: '${controller.attempts}',
                 minLabel: '1',
                 maxLabel: '5',
-                onChanged: (value) => controller.setAttempts(value.round()),
+                onChanged: presetReadonly
+                    ? null
+                    : (value) => controller.setAttempts(value.round()),
               );
               final cooldown = _sliderTile(
                 context,
@@ -1024,7 +1031,8 @@ class BattleView extends StatelessWidget {
                 label: '${controller.cooldownTimeout.toStringAsFixed(2)} s',
                 minLabel: '0.2 s',
                 maxLabel: '2.00 s',
-                onChanged: controller.setCooldownTimeout,
+                onChanged:
+                    presetReadonly ? null : controller.setCooldownTimeout,
               );
               if (!wide) {
                 return Column(

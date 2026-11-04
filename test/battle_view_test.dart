@@ -96,5 +96,11 @@ void main() {
         reason: '系统预设的技能开关应该禁用');
     expect(find.text('battle_preset_builtin'), findsOneWidget);
     expect(find.text('battle_preset_builtin_hint'), findsOneWidget);
+
+    // 系统预设只读：释放节奏的 4 个滑块 + 旧间隔项全部禁用（只剩识别相似度可调）
+    final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
+    expect(sliders.length, 6);
+    expect(sliders.where((slider) => slider.onChanged == null).length, 5,
+        reason: '系统预设下释放节奏应该全部禁用');
   });
 }

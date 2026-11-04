@@ -169,14 +169,8 @@ void main() {
 
   test('通用设置同步到 common', () {
     controller.setThreshold(0.85);
-    controller.setClicks(3);
-    controller.setCooldownTimeout(0.8);
     expect(controller.common['identify_threshold'], 0.85);
-    expect(controller.common['clicks'], 3);
-    expect(controller.common['cooldown_timeout'], 0.8);
     expect(controller.threshold.value, 0.85);
-    expect(controller.clicks, 3);
-    expect(controller.cooldownTimeout, 0.8);
   });
 
   test('applyCatalog：正在编辑的预设没了就回到系统预设', () {
@@ -188,7 +182,8 @@ void main() {
     expect(controller.editingId.value, 'default');
   });
 
-  test('释放节奏：四项写进 common（全局），越界自动夹住，与预设无关', () {
+  test('释放节奏：四项挂在当前编辑的预设上，越界自动夹住，系统预设只读', () {
+    editUserPreset();
     expect(controller.clicks, 2);
     expect(controller.clickInterval, 0.2);
     expect(controller.attempts, 3);
@@ -202,10 +197,10 @@ void main() {
     expect(controller.clickInterval, 0.35);
     expect(controller.attempts, 1);
     expect(controller.cooldownTimeout, 0.6);
-    expect(controller.common['clicks'], 4);
-    expect(controller.common['cooldown_timeout'], 0.6);
+    expect(controller.editingPreset!.clicks, 4);
+    expect(controller.editingPreset!.cooldownTimeout, 0.6);
 
-    // 越界夹到边界（和后端 BattleCommon 的 ge/le 一致）
+    // 越界夹到边界（和后端 BattlePreset 的 ge/le 一致）
     controller.setClicks(9);
     controller.setAttempts(0);
     controller.setClickInterval(5);
@@ -215,9 +210,15 @@ void main() {
     expect(controller.clickInterval, 1.0);
     expect(controller.cooldownTimeout, 2.0);
 
-    // 全局设置：切到只读的系统预设也照样生效
+    // 每个预设各一份：切到另一个预设看的是它自己的值
+    controller.selectPreset('default');
+    expect(controller.clicks, 2);
+    controller.selectPreset('preset_1');
+    expect(controller.clicks, 4);
+
+    // 系统预设只读：改了也不生效
     controller.selectPreset('default');
     controller.setClicks(1);
-    expect(controller.clicks, 1);
+    expect(controller.clicks, 2);
   });
 }

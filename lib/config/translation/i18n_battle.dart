@@ -40,7 +40,7 @@ final Map<String, String> _cn_battle = {
   'battle_cast_interval': '技能点击间隔',
   'battle_cast_interval_fixed': '固定 0.20 s（旧路径遗留，现用下面的「点击间隔」）',
   'battle_rhythm': '释放节奏',
-  'battle_rhythm_help': '全局生效，所有任务共用一套（不跟预设走）',
+  'battle_rhythm_help': '每个预设各一份，跟着当前选中的预设走',
   'battle_clicks': '连点次数',
   'battle_clicks_help': '一个技能连点几次；单击不触发时调大',
   'battle_click_interval': '点击间隔',
@@ -120,7 +120,7 @@ final Map<String, String> _us_battle = {
   'battle_cast_interval_fixed':
       'Fixed at 0.20 s (legacy path; use Click interval below)',
   'battle_rhythm': 'Cast rhythm',
-  'battle_rhythm_help': 'Global for every task; not tied to a preset',
+  'battle_rhythm_help': 'One set per preset; follows the preset being edited',
   'battle_clicks': 'Clicks per skill',
   'battle_clicks_help': 'How many taps per skill; raise it if a single tap does not trigger',
   'battle_click_interval': 'Click interval',

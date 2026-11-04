@@ -94,6 +94,10 @@ class BattleController extends GetxController {
           name: preset.name,
           order: List<String>.of(preset.order),
           disabled: List<String>.of(preset.disabled),
+          clicks: preset.clicks,
+          clickInterval: preset.clickInterval,
+          attempts: preset.attempts,
+          cooldownTimeout: preset.cooldownTimeout,
           builtin: preset.builtin,
         )));
 
@@ -148,30 +152,33 @@ class BattleController extends GetxController {
   bool isSelected(String skillId) => selected.contains(skillId);
 
   // ------------------------------------------------------------------ 释放节奏
-  /// 四项节奏存在「战斗设置」（battle.common）里，是**全局**配置：
-  /// 所有任务、所有预设共用一套，任务开战时直接读；默认预设只读，所以不适合放在预设里。
-  int get clicks => (common['clicks'] as num?)?.toInt() ?? 2;
+  /// 四项节奏挂在**当前编辑的预设**上：每个预设各一份，不同战术可以有不同点法。
+  /// 系统预设是只读的（由技能目录生成），这几项用固定默认值。
+  int get clicks => editingPreset?.clicks ?? 2;
 
-  double get clickInterval => (common['click_interval'] as num?)?.toDouble() ?? 0.2;
+  double get clickInterval => editingPreset?.clickInterval ?? 0.2;
 
-  int get attempts => (common['attempts'] as num?)?.toInt() ?? 3;
+  int get attempts => editingPreset?.attempts ?? 3;
 
-  double get cooldownTimeout =>
-      (common['cooldown_timeout'] as num?)?.toDouble() ?? 1.2;
+  double get cooldownTimeout => editingPreset?.cooldownTimeout ?? 1.2;
 
-  void setClicks(int value) => _setRhythm('clicks', value.clamp(1, 4));
+  void setClicks(int value) => _setRhythm((preset) => preset.clicks = value.clamp(1, 4));
 
-  void setClickInterval(double value) =>
-      _setRhythm('click_interval', value.clamp(0.05, 1.0));
+  void setClickInterval(double value) => _setRhythm(
+      (preset) => preset.clickInterval = value.clamp(0.05, 1.0));
 
-  void setAttempts(int value) => _setRhythm('attempts', value.clamp(1, 5));
+  void setAttempts(int value) =>
+      _setRhythm((preset) => preset.attempts = value.clamp(1, 5));
 
   void setCooldownTimeout(double value) =>
-      _setRhythm('cooldown_timeout', value.clamp(0.2, 2.0));
+      _setRhythm((preset) => preset.cooldownTimeout = value.clamp(0.2, 2.0));
 
-  void _setRhythm(String key, Object value) {
-    common[key] = value;
-    _scheduleCommonSave();
+  void _setRhythm(void Function(BattlePreset preset) apply) {
+    final preset = editingPreset;
+    if (preset == null || preset.builtin) return;
+    apply(preset);
+    presets.refresh();
+    _scheduleSave();
   }
 
   // ------------------------------------------------------------------ 预设管理
@@ -366,7 +373,13 @@ class BattleController extends GetxController {
     saving.value = true;
     try {
       final json = await ApiClient().updateBattlePreset(config.value,
-          id: preset.id, order: preset.order, disabled: preset.disabled);
+          id: preset.id,
+          order: preset.order,
+          disabled: preset.disabled,
+          clicks: preset.clicks,
+          clickInterval: preset.clickInterval,
+          attempts: preset.attempts,
+          cooldownTimeout: preset.cooldownTimeout);
       if (json.isNotEmpty) {
         applyCatalog(BattleCatalog.fromJson(json));
       }
@@ -388,10 +401,6 @@ class BattleController extends GetxController {
     try {
       final json = await ApiClient().setBattleCommon(config.value, {
         'identify_threshold': threshold.value,
-        'clicks': clicks,
-        'click_interval': clickInterval,
-        'attempts': attempts,
-        'cooldown_timeout': cooldownTimeout,
       });
       if (json.isNotEmpty) {
         applyCatalog(BattleCatalog.fromJson(json));
