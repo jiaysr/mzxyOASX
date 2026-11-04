@@ -325,7 +325,7 @@ class ApiClient {
     return (res.data as Map?)?.cast<String, dynamic>() ?? {};
   }
 
-  /// 改通用设置：{identify_threshold, respect_cooldown, cast_interval}
+  /// 改通用设置：{identify_threshold, clicks, click_interval, attempts, cooldown_timeout}
   Future<Map<String, dynamic>> setBattleCommon(
       String config, Map<String, dynamic> values) async {
     final res = await request(() => put(

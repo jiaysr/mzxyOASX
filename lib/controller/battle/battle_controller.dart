@@ -40,8 +40,6 @@ class BattleController extends GetxController {
   final identifying = false.obs;
 
   final threshold = 0.72.obs;
-  final castInterval = 0.2.obs;
-  final respectCooldown = true.obs;
 
   Timer? _saveTimer;
   Timer? _commonTimer;
@@ -110,8 +108,6 @@ class BattleController extends GetxController {
 
     threshold.value = (common['identify_threshold'] as num?)?.toDouble() ??
         catalog.defaultThreshold;
-    castInterval.value = (common['cast_interval'] as num?)?.toDouble() ?? 0.2;
-    respectCooldown.value = common['respect_cooldown'] != false;
     dirty.value = false;
   }
 
@@ -150,6 +146,33 @@ class BattleController extends GetxController {
   int get enabledCount => editingPreset?.enabledCount ?? 0;
 
   bool isSelected(String skillId) => selected.contains(skillId);
+
+  // ------------------------------------------------------------------ 释放节奏
+  /// 四项节奏存在「战斗设置」（battle.common）里，是**全局**配置：
+  /// 所有任务、所有预设共用一套，任务开战时直接读；默认预设只读，所以不适合放在预设里。
+  int get clicks => (common['clicks'] as num?)?.toInt() ?? 2;
+
+  double get clickInterval => (common['click_interval'] as num?)?.toDouble() ?? 0.2;
+
+  int get attempts => (common['attempts'] as num?)?.toInt() ?? 3;
+
+  double get cooldownTimeout =>
+      (common['cooldown_timeout'] as num?)?.toDouble() ?? 1.2;
+
+  void setClicks(int value) => _setRhythm('clicks', value.clamp(1, 4));
+
+  void setClickInterval(double value) =>
+      _setRhythm('click_interval', value.clamp(0.05, 1.0));
+
+  void setAttempts(int value) => _setRhythm('attempts', value.clamp(1, 5));
+
+  void setCooldownTimeout(double value) =>
+      _setRhythm('cooldown_timeout', value.clamp(0.2, 2.0));
+
+  void _setRhythm(String key, Object value) {
+    common[key] = value;
+    _scheduleCommonSave();
+  }
 
   // ------------------------------------------------------------------ 预设管理
   void selectPreset(String id) {
@@ -306,18 +329,6 @@ class BattleController extends GetxController {
     _scheduleCommonSave();
   }
 
-  void setCastInterval(double value) {
-    castInterval.value = value;
-    common['cast_interval'] = value;
-    _scheduleCommonSave();
-  }
-
-  void setRespectCooldown(bool value) {
-    respectCooldown.value = value;
-    common['respect_cooldown'] = value;
-    _scheduleCommonSave();
-  }
-
   // ------------------------------------------------------------------ 识别
   Future<void> identify() async {
     if (config.value.isEmpty || identifying.value) return;
@@ -377,8 +388,10 @@ class BattleController extends GetxController {
     try {
       final json = await ApiClient().setBattleCommon(config.value, {
         'identify_threshold': threshold.value,
-        'cast_interval': castInterval.value,
-        'respect_cooldown': respectCooldown.value,
+        'clicks': clicks,
+        'click_interval': clickInterval,
+        'attempts': attempts,
+        'cooldown_timeout': cooldownTimeout,
       });
       if (json.isNotEmpty) {
         applyCatalog(BattleCatalog.fromJson(json));

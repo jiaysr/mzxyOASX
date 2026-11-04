@@ -883,57 +883,128 @@ class BattleView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SwitchListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              secondary: Icon(Icons.timer_outlined, color: scheme.primary),
-              value: controller.respectCooldown.value,
-              onChanged: controller.setRespectCooldown,
-              title: Text(
-                'battle_respect_cooldown'.tr,
-                style: theme.textTheme.bodyLarge,
-              ),
+            // 识别：开战前认技能位用，全局唯一
+            _sliderTile(
+              context,
+              title: 'battle_similarity'.tr,
+              help: 'battle_similarity_help'.tr,
+              value: controller.threshold.value,
+              min: 0.4,
+              max: 0.95,
+              divisions: 11,
+              label: controller.threshold.value.toStringAsFixed(2),
+              minLabel: '0.40',
+              maxLabel: '0.95',
+              onChanged: controller.setThreshold,
             ),
-            const SizedBox(height: 8),
+            const Divider(height: 28),
+            // 释放节奏：全局唯一（不跟预设走），所有任务共用一套
+            Row(
+              children: [
+                Icon(Icons.timelapse_rounded, size: 18, color: scheme.primary),
+                const SizedBox(width: 6),
+                Text(
+                  'battle_rhythm'.tr,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'battle_rhythm_help'.tr,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
             LayoutBuilder(builder: (context, constraints) {
               final wide = constraints.maxWidth >= 700;
-              final similarity = _sliderTile(
+              final clicks = _sliderTile(
                 context,
-                title: 'battle_similarity'.tr,
-                help: 'battle_similarity_help'.tr,
-                value: controller.threshold.value,
-                min: 0.4,
-                max: 0.95,
-                divisions: 11,
-                label: controller.threshold.value.toStringAsFixed(2),
-                minLabel: '0.40',
-                maxLabel: '0.95',
-                onChanged: controller.setThreshold,
+                title: 'battle_clicks'.tr,
+                help: 'battle_clicks_help'.tr,
+                value: controller.clicks.toDouble(),
+                min: 1,
+                max: 4,
+                divisions: 3,
+                label: '${controller.clicks}',
+                minLabel: '1',
+                maxLabel: '4',
+                onChanged: (value) => controller.setClicks(value.round()),
               );
               final interval = _sliderTile(
                 context,
-                title: 'battle_cast_interval'.tr,
-                value: controller.castInterval.value,
-                min: 0,
+                title: 'battle_click_interval'.tr,
+                help: 'battle_click_interval_help'.tr,
+                value: controller.clickInterval,
+                min: 0.05,
                 max: 1,
-                divisions: 20,
-                label: '${controller.castInterval.value.toStringAsFixed(2)} s',
-                minLabel: '0 s',
+                divisions: 19,
+                label: '${controller.clickInterval.toStringAsFixed(2)} s',
+                minLabel: '0.05 s',
                 maxLabel: '1.00 s',
-                onChanged: controller.setCastInterval,
+                onChanged: controller.setClickInterval,
+              );
+              final attempts = _sliderTile(
+                context,
+                title: 'battle_attempts'.tr,
+                help: 'battle_attempts_help'.tr,
+                value: controller.attempts.toDouble(),
+                min: 1,
+                max: 5,
+                divisions: 4,
+                label: '${controller.attempts}',
+                minLabel: '1',
+                maxLabel: '5',
+                onChanged: (value) => controller.setAttempts(value.round()),
+              );
+              final cooldown = _sliderTile(
+                context,
+                title: 'battle_cooldown_timeout'.tr,
+                help: 'battle_cooldown_timeout_help'.tr,
+                value: controller.cooldownTimeout,
+                min: 0.2,
+                max: 2,
+                divisions: 18,
+                label: '${controller.cooldownTimeout.toStringAsFixed(2)} s',
+                minLabel: '0.2 s',
+                maxLabel: '2.00 s',
+                onChanged: controller.setCooldownTimeout,
               );
               if (!wide) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [similarity, const SizedBox(height: 12), interval],
+                  children: [
+                    clicks,
+                    const SizedBox(height: 8),
+                    interval,
+                    const SizedBox(height: 8),
+                    attempts,
+                    const SizedBox(height: 8),
+                    cooldown,
+                  ],
                 );
               }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              return Column(
                 children: [
-                  Expanded(child: similarity),
-                  const SizedBox(width: 32),
-                  Expanded(child: interval),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: clicks),
+                      const SizedBox(width: 32),
+                      Expanded(child: interval),
+                    ],
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: attempts),
+                      const SizedBox(width: 32),
+                      Expanded(child: cooldown),
+                    ],
+                  ),
                 ],
               );
             }),
@@ -954,7 +1025,7 @@ class BattleView extends StatelessWidget {
     required String label,
     required String minLabel,
     required String maxLabel,
-    required ValueChanged<double> onChanged,
+    required ValueChanged<double>? onChanged,
   }) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;

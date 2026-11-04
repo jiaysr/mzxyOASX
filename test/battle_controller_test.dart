@@ -77,8 +77,7 @@ void main() {
   test('预设落地：默认看系统预设（只读），列表里有系统预设 + 用户预设', () {
     expect(controller.presets.length, 2);
     expect(controller.editingId.value, 'default');
-    expect(controller.isReadonly, isTrue);
-    expect(controller.orderedSkills.length, 20);
+    expect(controller.isReadonly, isTrue);    expect(controller.orderedSkills.length, 20);
 
     editUserPreset();
     expect(controller.isReadonly, isFalse);
@@ -170,14 +169,14 @@ void main() {
 
   test('通用设置同步到 common', () {
     controller.setThreshold(0.85);
-    controller.setCastInterval(0.35);
-    controller.setRespectCooldown(false);
+    controller.setClicks(3);
+    controller.setCooldownTimeout(0.8);
     expect(controller.common['identify_threshold'], 0.85);
-    expect(controller.common['cast_interval'], 0.35);
-    expect(controller.common['respect_cooldown'], false);
+    expect(controller.common['clicks'], 3);
+    expect(controller.common['cooldown_timeout'], 0.8);
     expect(controller.threshold.value, 0.85);
-    expect(controller.castInterval.value, 0.35);
-    expect(controller.respectCooldown.value, isFalse);
+    expect(controller.clicks, 3);
+    expect(controller.cooldownTimeout, 0.8);
   });
 
   test('applyCatalog：正在编辑的预设没了就回到系统预设', () {
@@ -187,5 +186,38 @@ void main() {
     controller.applyCatalog(catalog);
     expect(controller.presets.length, 1);
     expect(controller.editingId.value, 'default');
+  });
+
+  test('释放节奏：四项写进 common（全局），越界自动夹住，与预设无关', () {
+    expect(controller.clicks, 2);
+    expect(controller.clickInterval, 0.2);
+    expect(controller.attempts, 3);
+    expect(controller.cooldownTimeout, 1.2);
+
+    controller.setClicks(4);
+    controller.setClickInterval(0.35);
+    controller.setAttempts(1);
+    controller.setCooldownTimeout(0.6);
+    expect(controller.clicks, 4);
+    expect(controller.clickInterval, 0.35);
+    expect(controller.attempts, 1);
+    expect(controller.cooldownTimeout, 0.6);
+    expect(controller.common['clicks'], 4);
+    expect(controller.common['cooldown_timeout'], 0.6);
+
+    // 越界夹到边界（和后端 BattleCommon 的 ge/le 一致）
+    controller.setClicks(9);
+    controller.setAttempts(0);
+    controller.setClickInterval(5);
+    controller.setCooldownTimeout(3);
+    expect(controller.clicks, 4);
+    expect(controller.attempts, 1);
+    expect(controller.clickInterval, 1.0);
+    expect(controller.cooldownTimeout, 2.0);
+
+    // 全局设置：切到只读的系统预设也照样生效
+    controller.selectPreset('default');
+    controller.setClicks(1);
+    expect(controller.clicks, 1);
   });
 }

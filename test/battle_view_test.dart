@@ -44,6 +44,9 @@ void main() {
     expect(find.textContaining('我的预设'), findsWidgets); // 预设下拉里的当前预设
     expect(find.byType(Switch), findsAtLeastNWidgets(5));
     expect(find.byType(Checkbox), findsAtLeastNWidgets(5));
+    // 战斗设置里：识别相似度 + 四项释放节奏
+    expect(find.text('battle_rhythm'), findsOneWidget);
+    expect(find.byType(Slider), findsNWidgets(5));
   });
 
   testWidgets('关掉一个开关会禁用对应技能', (tester) async {
