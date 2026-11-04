@@ -883,20 +883,73 @@ class BattleView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 识别：开战前认技能位用，全局唯一
-            _sliderTile(
-              context,
-              title: 'battle_similarity'.tr,
-              help: 'battle_similarity_help'.tr,
-              value: controller.threshold.value,
-              min: 0.4,
-              max: 0.95,
-              divisions: 11,
-              label: controller.threshold.value.toStringAsFixed(2),
-              minLabel: '0.40',
-              maxLabel: '0.95',
-              onChanged: controller.setThreshold,
+            // 固定行为：显示出来但禁止修改（灰色样式）
+            SwitchListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              secondary: Icon(Icons.timer_outlined,
+                  color: scheme.onSurfaceVariant, size: 22),
+              value: true,
+              onChanged: null,
+              title: Text(
+                'battle_respect_cooldown'.tr,
+                style: theme.textTheme.bodyLarge,
+              ),
+              subtitle: Text(
+                'battle_respect_cooldown_fixed'.tr,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
             ),
+            const SizedBox(height: 4),
+            LayoutBuilder(builder: (context, constraints) {
+              final wide = constraints.maxWidth >= 700;
+              final similarity = _sliderTile(
+                context,
+                title: 'battle_similarity'.tr,
+                help: 'battle_similarity_help'.tr,
+                value: controller.threshold.value,
+                min: 0.4,
+                max: 0.95,
+                divisions: 11,
+                label: controller.threshold.value.toStringAsFixed(2),
+                minLabel: '0.40',
+                maxLabel: '0.95',
+                onChanged: controller.setThreshold,
+              );
+              // 旧路径遗留项：固定 0.20 s，显示但禁止修改
+              final legacy = _sliderTile(
+                context,
+                title: 'battle_cast_interval'.tr,
+                help: 'battle_cast_interval_fixed'.tr,
+                value: 0.2,
+                min: 0,
+                max: 1,
+                divisions: 20,
+                label: '0.20 s',
+                minLabel: '0 s',
+                maxLabel: '1.00 s',
+                onChanged: null,
+              );
+              if (!wide) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    similarity,
+                    const SizedBox(height: 12),
+                    legacy,
+                  ],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: similarity),
+                  const SizedBox(width: 32),
+                  Expanded(child: legacy),
+                ],
+              );
+            }),
             const Divider(height: 28),
             // 释放节奏：全局唯一（不跟预设走），所有任务共用一套
             Row(
