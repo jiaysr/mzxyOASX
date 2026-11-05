@@ -35,10 +35,6 @@ final Map<String, String> _cn_battle = {
   'battle_settings': '战斗设置',
   'battle_similarity': '识别相似度下限',
   'battle_similarity_help': '和图标素材的相似度低于该值就当作没认出来',
-  'battle_respect_cooldown': '只点冷却好的技能',
-  'battle_respect_cooldown_fixed': '固定开启：队列模式永远只放冷却好的技能',
-  'battle_cast_interval': '技能点击间隔',
-  'battle_cast_interval_fixed': '固定 0.20 s（旧路径遗留，现用下面的「点击间隔」）',
   'battle_rhythm': '释放节奏',
   'battle_rhythm_help': '每个预设各一份，跟着当前选中的预设走',
   'battle_clicks': '连点次数',
@@ -113,12 +109,6 @@ final Map<String, String> _us_battle = {
   'battle_settings': 'Battle Settings',
   'battle_similarity': 'Similarity threshold',
   'battle_similarity_help': 'Below this score a slot is treated as unidentified',
-  'battle_respect_cooldown': 'Only cast ready skills',
-  'battle_respect_cooldown_fixed':
-      'Always on: the queue mode only casts skills that are ready',
-  'battle_cast_interval': 'Cast interval',
-  'battle_cast_interval_fixed':
-      'Fixed at 0.20 s (legacy path; use Click interval below)',
   'battle_rhythm': 'Cast rhythm',
   'battle_rhythm_help': 'One set per preset; follows the preset being edited',
   'battle_clicks': 'Clicks per skill',
