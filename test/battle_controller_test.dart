@@ -47,8 +47,6 @@ BattleCatalog fakeCatalog({int skillCount = 20}) {
     ],
     common: {
       'identify_threshold': 0.72,
-      'respect_cooldown': true,
-      'cast_interval': 0.2,
     },
     defaultOrder: List.of(order),
     defaultThreshold: 0.72,
@@ -182,43 +180,43 @@ void main() {
     expect(controller.editingId.value, 'default');
   });
 
-  test('释放节奏：四项挂在当前编辑的预设上，越界自动夹住，系统预设只读', () {
+  test('释放节奏：三项挂在当前编辑的预设上，越界自动夹住，系统预设只读', () {
     editUserPreset();
     expect(controller.clicks, 2);
     expect(controller.clickInterval, 0.2);
-    expect(controller.attempts, 3);
-    expect(controller.cooldownTimeout, 1.2);
+    expect(controller.skillInterval, 0.3);
 
     controller.setClicks(4);
     controller.setClickInterval(0.35);
-    controller.setAttempts(1);
-    controller.setCooldownTimeout(0.6);
+    controller.setSkillInterval(0.75);
     expect(controller.clicks, 4);
     expect(controller.clickInterval, 0.35);
-    expect(controller.attempts, 1);
-    expect(controller.cooldownTimeout, 0.6);
+    expect(controller.skillInterval, 0.75);
     expect(controller.editingPreset!.clicks, 4);
-    expect(controller.editingPreset!.cooldownTimeout, 0.6);
+    expect(controller.editingPreset!.skillInterval, 0.75);
 
     // 越界夹到边界（和后端 BattlePreset 的 ge/le 一致）
     controller.setClicks(9);
-    controller.setAttempts(0);
     controller.setClickInterval(5);
-    controller.setCooldownTimeout(3);
+    controller.setSkillInterval(0.01);
     expect(controller.clicks, 4);
-    expect(controller.attempts, 1);
     expect(controller.clickInterval, 1.0);
-    expect(controller.cooldownTimeout, 2.0);
+    expect(controller.skillInterval, 0.1);
+    controller.setSkillInterval(5);
+    expect(controller.skillInterval, 1.0);
 
     // 每个预设各一份：切到另一个预设看的是它自己的值
     controller.selectPreset('default');
     expect(controller.clicks, 2);
+    expect(controller.skillInterval, 0.3);
     controller.selectPreset('preset_1');
     expect(controller.clicks, 4);
 
     // 系统预设只读：改了也不生效
     controller.selectPreset('default');
     controller.setClicks(1);
+    controller.setSkillInterval(0.9);
     expect(controller.clicks, 2);
+    expect(controller.skillInterval, 0.3);
   });
 }

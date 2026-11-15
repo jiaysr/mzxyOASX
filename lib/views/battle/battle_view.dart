@@ -952,34 +952,19 @@ class BattleView extends StatelessWidget {
                 onChanged:
                     presetReadonly ? null : controller.setClickInterval,
               );
-              final attempts = _sliderTile(
+              final skillInterval = _sliderTile(
                 context,
-                title: 'battle_attempts'.tr,
-                help: 'battle_attempts_help'.tr,
-                value: controller.attempts.toDouble(),
-                min: 1,
-                max: 5,
-                divisions: 4,
-                label: '${controller.attempts}',
-                minLabel: '1',
-                maxLabel: '5',
-                onChanged: presetReadonly
-                    ? null
-                    : (value) => controller.setAttempts(value.round()),
-              );
-              final cooldown = _sliderTile(
-                context,
-                title: 'battle_cooldown_timeout'.tr,
-                help: 'battle_cooldown_timeout_help'.tr,
-                value: controller.cooldownTimeout,
-                min: 0.2,
-                max: 2,
+                title: 'battle_skill_interval'.tr,
+                help: 'battle_skill_interval_help'.tr,
+                value: controller.skillInterval,
+                min: 0.1,
+                max: 1,
                 divisions: 18,
-                label: '${controller.cooldownTimeout.toStringAsFixed(2)} s',
-                minLabel: '0.2 s',
-                maxLabel: '2.00 s',
+                label: '${controller.skillInterval.toStringAsFixed(2)} s',
+                minLabel: '0.10 s',
+                maxLabel: '1.00 s',
                 onChanged:
-                    presetReadonly ? null : controller.setCooldownTimeout,
+                    presetReadonly ? null : controller.setSkillInterval,
               );
               if (!wide) {
                 return Column(
@@ -989,30 +974,18 @@ class BattleView extends StatelessWidget {
                     const SizedBox(height: 8),
                     interval,
                     const SizedBox(height: 8),
-                    attempts,
-                    const SizedBox(height: 8),
-                    cooldown,
+                    skillInterval,
                   ],
                 );
               }
-              return Column(
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: clicks),
-                      const SizedBox(width: 32),
-                      Expanded(child: interval),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: attempts),
-                      const SizedBox(width: 32),
-                      Expanded(child: cooldown),
-                    ],
-                  ),
+                  Expanded(child: clicks),
+                  const SizedBox(width: 32),
+                  Expanded(child: interval),
+                  const SizedBox(width: 32),
+                  Expanded(child: skillInterval),
                 ],
               );
             }),

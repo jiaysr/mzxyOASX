@@ -69,11 +69,10 @@ class BattlePreset {
   List<String> disabled;
 
   /// 释放节奏（**每个预设各一份**）
-  /// 连点几次 / 两次点击间隔 / 没进冷却重试几次 / 每次等进冷却的上限
+  /// 连点几次 / 两次点击间隔 / 技能之间的等待
   int clicks;
   double clickInterval;
-  int attempts;
-  double cooldownTimeout;
+  double skillInterval;
   final bool builtin;
 
   BattlePreset({
@@ -83,8 +82,7 @@ class BattlePreset {
     List<String>? disabled,
     this.clicks = 2,
     this.clickInterval = 0.2,
-    this.attempts = 3,
-    this.cooldownTimeout = 1.2,
+    this.skillInterval = 0.3,
     this.builtin = false,
   })  : order = order ?? <String>[],
         disabled = disabled ?? <String>[];
@@ -98,8 +96,7 @@ class BattlePreset {
           (json['disabled'] as List?)?.map((e) => e.toString()).toList() ?? [],
       clicks: (json['clicks'] as num?)?.toInt() ?? 2,
       clickInterval: (json['click_interval'] as num?)?.toDouble() ?? 0.2,
-      attempts: (json['attempts'] as num?)?.toInt() ?? 3,
-      cooldownTimeout: (json['cooldown_timeout'] as num?)?.toDouble() ?? 1.2,
+      skillInterval: (json['skill_interval'] as num?)?.toDouble() ?? 0.3,
       builtin: json['builtin'] == true,
     );
   }
@@ -110,8 +107,7 @@ class BattlePreset {
     List<String>? disabled,
     int? clicks,
     double? clickInterval,
-    int? attempts,
-    double? cooldownTimeout,
+    double? skillInterval,
   }) {
     return BattlePreset(
       id: id,
@@ -120,8 +116,7 @@ class BattlePreset {
       disabled: disabled ?? List<String>.of(this.disabled),
       clicks: clicks ?? this.clicks,
       clickInterval: clickInterval ?? this.clickInterval,
-      attempts: attempts ?? this.attempts,
-      cooldownTimeout: cooldownTimeout ?? this.cooldownTimeout,
+      skillInterval: skillInterval ?? this.skillInterval,
       builtin: builtin,
     );
   }
@@ -137,8 +132,7 @@ class BattlePreset {
         'disabled': disabled,
         'clicks': clicks,
         'click_interval': clickInterval,
-        'attempts': attempts,
-        'cooldown_timeout': cooldownTimeout,
+        'skill_interval': skillInterval,
       };
 }
 

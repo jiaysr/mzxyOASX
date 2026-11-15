@@ -44,18 +44,18 @@ void main() {
     expect(find.textContaining('我的预设'), findsWidgets); // 预设下拉里的当前预设
     expect(find.byType(Switch), findsAtLeastNWidgets(5));
     expect(find.byType(Checkbox), findsAtLeastNWidgets(5));
-    // 战斗设置里：识别相似度 + 4 项释放节奏 + 1 个禁用的旧间隔
+    // 战斗设置里：识别相似度 + 3 项释放节奏（没有不可修改的旧控件）
     expect(find.text('battle_rhythm'), findsOneWidget);
+    expect(find.text('battle_skill_interval'), findsOneWidget);
+    expect(find.text('battle_attempts'), findsNothing);
+    expect(find.text('battle_cooldown_timeout'), findsNothing);
     final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
-    expect(sliders.length, 6);
+    expect(sliders.length, 4);
     expect(
       sliders.where((slider) => slider.onChanged == null).length,
-      1,
-      reason: '「技能点击间隔」是固定项，应该显示成禁止样式',
+      0,
+      reason: '设置页不再画不可修改的旧控件',
     );
-    final fixed = tester.widget<SwitchListTile>(find.byType(SwitchListTile).first);
-    expect(fixed.onChanged, isNull,
-        reason: '「只点冷却好的技能」是固定行为，应该显示成禁止样式');
   });
 
   testWidgets('关掉一个开关会禁用对应技能', (tester) async {
@@ -97,10 +97,10 @@ void main() {
     expect(find.text('battle_preset_builtin'), findsOneWidget);
     expect(find.text('battle_preset_builtin_hint'), findsOneWidget);
 
-    // 系统预设只读：释放节奏的 4 个滑块 + 旧间隔项全部禁用（只剩识别相似度可调）
+    // 系统预设只读：释放节奏的 3 个滑块禁用（只剩识别相似度可调）
     final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
-    expect(sliders.length, 6);
-    expect(sliders.where((slider) => slider.onChanged == null).length, 5,
+    expect(sliders.length, 4);
+    expect(sliders.where((slider) => slider.onChanged == null).length, 3,
         reason: '系统预设下释放节奏应该全部禁用');
   });
 }

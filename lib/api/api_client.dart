@@ -304,8 +304,7 @@ class ApiClient {
     List<String>? disabled,
     int? clicks,
     double? clickInterval,
-    int? attempts,
-    double? cooldownTimeout,
+    double? skillInterval,
   }) async {
     final res = await request(() => put(
           '/battle/preset',
@@ -317,8 +316,7 @@ class ApiClient {
             if (disabled != null) 'disabled': disabled,
             if (clicks != null) 'clicks': clicks,
             if (clickInterval != null) 'click_interval': clickInterval,
-            if (attempts != null) 'attempts': attempts,
-            if (cooldownTimeout != null) 'cooldown_timeout': cooldownTimeout,
+            if (skillInterval != null) 'skill_interval': skillInterval,
           },
         ));
     return (res.data as Map?)?.cast<String, dynamic>() ?? {};

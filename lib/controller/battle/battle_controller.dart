@@ -96,8 +96,7 @@ class BattleController extends GetxController {
           disabled: List<String>.of(preset.disabled),
           clicks: preset.clicks,
           clickInterval: preset.clickInterval,
-          attempts: preset.attempts,
-          cooldownTimeout: preset.cooldownTimeout,
+          skillInterval: preset.skillInterval,
           builtin: preset.builtin,
         )));
 
@@ -152,26 +151,21 @@ class BattleController extends GetxController {
   bool isSelected(String skillId) => selected.contains(skillId);
 
   // ------------------------------------------------------------------ 释放节奏
-  /// 四项节奏挂在**当前编辑的预设**上：每个预设各一份，不同战术可以有不同点法。
+  /// 三项节奏挂在**当前编辑的预设**上：每个预设各一份，不同战术可以有不同点法。
   /// 系统预设是只读的（由技能目录生成），这几项用固定默认值。
   int get clicks => editingPreset?.clicks ?? 2;
 
   double get clickInterval => editingPreset?.clickInterval ?? 0.2;
 
-  int get attempts => editingPreset?.attempts ?? 3;
-
-  double get cooldownTimeout => editingPreset?.cooldownTimeout ?? 1.2;
+  double get skillInterval => editingPreset?.skillInterval ?? 0.3;
 
   void setClicks(int value) => _setRhythm((preset) => preset.clicks = value.clamp(1, 4));
 
   void setClickInterval(double value) => _setRhythm(
       (preset) => preset.clickInterval = value.clamp(0.05, 1.0));
 
-  void setAttempts(int value) =>
-      _setRhythm((preset) => preset.attempts = value.clamp(1, 5));
-
-  void setCooldownTimeout(double value) =>
-      _setRhythm((preset) => preset.cooldownTimeout = value.clamp(0.2, 2.0));
+  void setSkillInterval(double value) =>
+      _setRhythm((preset) => preset.skillInterval = value.clamp(0.1, 1.0));
 
   void _setRhythm(void Function(BattlePreset preset) apply) {
     final preset = editingPreset;
@@ -378,8 +372,7 @@ class BattleController extends GetxController {
           disabled: preset.disabled,
           clicks: preset.clicks,
           clickInterval: preset.clickInterval,
-          attempts: preset.attempts,
-          cooldownTimeout: preset.cooldownTimeout);
+          skillInterval: preset.skillInterval);
       if (json.isNotEmpty) {
         applyCatalog(BattleCatalog.fromJson(json));
       }
